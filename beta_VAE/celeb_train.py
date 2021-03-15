@@ -14,7 +14,7 @@ from inception_score import Inception_score
 from load_data import load_celeba
 
 
-optimizer = tf.keras.optimizers.Adam(1e-6)
+optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 mbs = tf.losses.MeanAbsoluteError()
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
@@ -54,7 +54,7 @@ def ori_cross_loss(model, x, d):
     phi_z = rotate_vector(r_z, r_m)
     phi_x = model.decode(phi_z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
 
     return -tf.reduce_mean(logx_z)
 
@@ -71,7 +71,7 @@ def rota_cross_loss(model, x, d):
     phi_x = model.decode(phi_z)
 
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
 
     return -tf.reduce_mean(logx_z)
 
@@ -93,7 +93,7 @@ def compute_loss(model, x):
     logx_z = -tf.reduce_sum(cross_ent, axis=[1])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z)
+    return -tf.reduce_mean(logx_z + beta * (logpz + logqz_x))
 
 
 
@@ -126,14 +126,11 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             d = np.radians(degree)
             with tf.GradientTape() as tape:
                 ori_loss = compute_loss(model, x)
-                '''
                 r_x = rotate(x, d)
                 rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, x, d)
                 rota_cross_l = rota_cross_loss(model, x, d)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-                '''
-                total_loss = ori_loss
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
         '''
@@ -175,14 +172,11 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             for test_x in test_dataset:
                 d = np.radians(random.randint(30, 90))
                 r_x = rotate(test_x, d)
-                '''
                 total_loss = rota_cross_loss(model, test_x, d) \
                              + ori_cross_loss(model, test_x, d) \
                              + compute_loss(model, test_x) \
                              + reconstruction_loss(model, r_x)                
-                
-                '''
-                total_loss = compute_loss(model, test_x)
+
 
                 loss(total_loss)
             elbo = -loss.result()
@@ -253,7 +247,7 @@ if __name__ == '__main__':
     test_size_end = train_size + test_size
     train_images = normalize(dataset[:train_size, :, :, :])
     test_images = normalize(dataset[train_size:test_size_end, :, :, :])
-    batch_size = 32
+    batch_size = 1
     latent_dim = 64
     epochs = 100
     inception_model = Inception_score()
