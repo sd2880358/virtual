@@ -94,17 +94,15 @@ def compute_loss(model, x):
     return -tf.reduce_mean(logx_z + beta * (logpz -  logqz_x))
 
 
-def generate_and_save_images(model, epoch, test_input, file_path):
-    mean, logvar = model.encode(test_input)
+def generate_and_save_images(model, epoch, test_sample, file_path):
+    mean, logvar = model.encode(test_sample)
     z = model.reparameterize(mean, logvar)
     predictions = model.sample(z)
-    fig = plt.figure(figsize=(12, 12))
-    display_list = [test_input[0], predictions[0]]
-    title = ['Input Image', 'Predicted Image']
-    for i in range(2):
-        plt.subplot(1, 2, i + 1)
-        plt.title(title[i])
-        plt.imshow(display_list[i] * 0.5 + 0.5)
+    fig = plt.figure(figsize=(4, 4))
+
+    for i in range(predictions.shape[0]):
+        plt.subplot(4, 4, i + 1)
+        plt.imshow(predictions[i, :, :, 0], cmap='gray')
         plt.axis('off')
     file_dir = './image/' + date + file_path
     if not os.path.exists(file_dir):

@@ -10,4 +10,5 @@ def load_celeba(path):
 
 
 if __name__ == "__main__":
-    load_celeba("./CelebA/data/celeba")
+    test = load_celeba("./CelebA/")
+    print(len(test))

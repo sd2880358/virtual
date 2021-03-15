@@ -3,9 +3,6 @@ from tqdm import tqdm
 import os
 import cv2
 import numpy as np
-from PIL import Image
-import glob
-
 
 if __name__ == "__main__":
     ZIP_PATH = "img_align_celeba.zip"
@@ -14,17 +11,16 @@ if __name__ == "__main__":
     OUTPUT_WIDTH = 32
     OTUPUT_HEIGHT = 32
     SAVE_PATH = "data.npy"
-    image_files = "img_algin_celeba"
 
     archive = zipfile.ZipFile(ZIP_PATH, "r")
-    print(os.path.exists(ZIP_PATH))
+    image_files = [os.path.join("img_align_celeba/img_align_celeba", "{0:06d}.jpg".format(i)) for i in range(1, 202599 + 1)]
     images = []
-    for image_file in glob.glob(image_files):
+    for image_file in tqdm(image_files):
         image = archive.read(image_file)
         image = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
         height, width, _ = image.shape
-        s_height = (height - CROP_HEIGHT) / 2
-        s_width = (width - CROP_WIDTH) / 2
+        s_height = int((height - CROP_HEIGHT) / 2)
+        s_width = int((width - CROP_WIDTH) / 2)
         image = image[s_height: s_height + CROP_HEIGHT,
                       s_width: s_width + CROP_WIDTH,
                       :]

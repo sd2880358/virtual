@@ -12,3 +12,4 @@ def divide_dataset(train_data, train_labels, sample_size):
     train_images = train_data[idx]
     dataset.append(train_images)
   return np.array(dataset).reshape(10 * sample_size, 28, 28, 1)
+

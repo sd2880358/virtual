@@ -4,13 +4,16 @@ from math import floor
 class CVAE(tf.keras.Model):
   """Convolutional variational autoencoder."""
 
-  def __init__(self, latent_dim, beta=4):
+  def __init__(self, latent_dim, beta=4, shape=[28,28,1]):
     super(CVAE, self).__init__()
     self.latent_dim = latent_dim
     self.beta = beta
+    self.shape = shape
+    self.output_f = int(shape[0]/4)
+    self.output_s = shape[2]
     self.encoder = tf.keras.Sequential(
         [
-            tf.keras.layers.InputLayer(input_shape=(28, 28, 1)),
+            tf.keras.layers.InputLayer(input_shape=shape),
             tf.keras.layers.Conv2D(
                 filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
             tf.keras.layers.Conv2D(
@@ -24,8 +27,8 @@ class CVAE(tf.keras.Model):
     self.decoder = tf.keras.Sequential(
         [
             tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
-            tf.keras.layers.Dense(units=7*7*32, activation=tf.nn.relu),
-            tf.keras.layers.Reshape(target_shape=(7, 7, 32)),
+            tf.keras.layers.Dense(units=self.output_f * self.output_f *32, activation=tf.nn.relu),
+            tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
             tf.keras.layers.Conv2DTranspose(
                 filters=64, kernel_size=3, strides=2, padding='same',
                 activation='relu'),
@@ -34,7 +37,7 @@ class CVAE(tf.keras.Model):
                 activation='relu'),
             # No activation
             tf.keras.layers.Conv2DTranspose(
-                filters=1, kernel_size=3, strides=1, padding='same'),
+                filters=self.output_s, kernel_size=3, strides=1, padding='same'),
         ]
     )
 
