@@ -169,11 +169,13 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             for test_x in test_dataset:
                 d = np.radians(random.randint(30, 90))
                 r_x = rotate(test_x, d)
+                '''
                 total_loss = rota_cross_loss(model, test_x, d) \
                              + ori_cross_loss(model, test_x, d) \
                              + compute_loss(model, test_x) \
-                             + reconstruction_loss(model, r_x)                
-
+                             + reconstruction_loss(model, r_x)                   
+                '''
+                total_loss = ori_cross_loss(model, test_x, d)
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
