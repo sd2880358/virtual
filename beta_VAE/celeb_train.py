@@ -23,7 +23,7 @@ def reconstruction_loss(model, X):
     Z = model.reparameterize(mean, logvar)
     X_pred = model.decode(Z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=X_pred, labels=X)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
     return -tf.reduce_mean(logx_z)
 
 
@@ -90,10 +90,10 @@ def compute_loss(model, x):
     beta_loss = reco_loss + kl_loss * beta
     '''
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
+    logx_z = -tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1]))
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z + beta * (logpz + logqz_x))
+    return logx_z + -tf.reduce_mean(beta * (logpz + logqz_x))
 
 
 
