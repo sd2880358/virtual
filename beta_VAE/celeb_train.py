@@ -81,7 +81,7 @@ def rota_cross_loss(model, x, d):
 
 def compute_loss(model, x):
     beta = model.beta
-    mean, logvar = model.encode(x)
+    mean, logvar = model.encode(x, training=True)
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
     '''
@@ -90,10 +90,10 @@ def compute_loss(model, x):
     beta_loss = reco_loss + kl_loss * beta
     '''
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
+    logx_z = tf.reduce_sum(cross_ent, axis=[1])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z)
+    return tf.reduce_mean(logx_z)
 
 
 
@@ -125,6 +125,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         d = np.radians(degree)
         with tf.GradientTape() as tape:
             ori_loss = compute_loss(model, x)
+            print(ori_loss)
             '''
                 r_x = rotate(x, d)
                 rota_loss = reconstruction_loss(model, r_x)
@@ -132,19 +133,8 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 rota_cross_l = rota_cross_loss(model, x, d)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             '''
-            total_loss = ori_loss
-        gradients = tape.gradient(total_loss, model.trainable_variables)
+        gradients = tape.gradient(ori_loss, model.trainable_variables)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        '''
-        with tf.GradientTape() as tape:
-            r_x = rotate(x, d)
-            rota_loss = compute_loss(model, r_x)
-        gradients = tape.gradient(rota_loss, model.trainable_variables)  
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        with tf.GradientTape() as tape:
-        gradients = tape.gradient(total_loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        '''
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
                                optimizer=optimizer)
