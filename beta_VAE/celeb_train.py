@@ -178,7 +178,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epochs, elbo, end_time - start_time))
+                  .format(epoch, elbo, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
