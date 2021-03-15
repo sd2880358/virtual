@@ -239,11 +239,11 @@ def compute_and_save_inception_score(model, filePath):
 
 if __name__ == '__main__':
     dataset = load_celeba("./CelebA/")
-    train_ratio = 0.8
-    train_size = int(train_ratio * dataset.shape[0])
-    test_size = dataset.shape[0] - train_size
+    train_size = 10000
+    test_size = 2000
+    test_size_end = train_size + test_size
     train_images = normalize(dataset[:train_size, :, :, :])
-    test_images = normalize(dataset[train_size:, :, :, :])
+    test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
     latent_dim = 100
     epochs = 100
