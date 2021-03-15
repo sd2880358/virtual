@@ -126,12 +126,12 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             ori_loss = compute_loss(model, x)
         gradients = tape.gradient(ori_loss, model.trainable_variables)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        '''
         for i in range(0, 100, 10):
             d = np.radians(i)
             r_x = rotate(x, d)
             with tf.GradientTape() as tape:
                 rota_loss = reconstruction_loss(model, r_x)
-
             gradients = tape.gradient(rota_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
             with tf.GradientTape() as tape:
@@ -140,6 +140,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 total_loss = ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        '''
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
                                optimizer=optimizer)
