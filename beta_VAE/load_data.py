@@ -2,11 +2,10 @@ import os
 import numpy as np
 
 
-def load_celeba(path, normalize=False):
+def load_celeba(path):
     data = np.load(os.path.join(path, "data.npy"))
     data = data.astype(float)
-    if normalize:
-        data = data / 255.0 * 2.0 - 1.0  # -1 ~ 1
+    data = data / 255.0 * 2.0 - 1.0  # -1 ~ 1
     return data
 
 
