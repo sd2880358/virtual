@@ -238,7 +238,7 @@ def compute_and_save_inception_score(model, filePath):
 
 
 if __name__ == '__main__':
-    dataset = load_celeba("./CelebA/")
+    dataset = load_celeba("../CelebA/")
     train_size = 10000
     test_size = 2000
     test_size_end = train_size + test_size
