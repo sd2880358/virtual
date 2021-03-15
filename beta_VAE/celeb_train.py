@@ -107,7 +107,7 @@ def generate_and_save_images(model, epoch, test_input, file_path):
     for i in range(2):
         plt.subplot(1, 2, i + 1)
         plt.title(title[i])
-        plt.imshow(display_list[i] * 0.5 + 0.5)
+        plt.imshow(display_list[i])
         plt.axis('off')
     file_dir = './image/' + date + file_path
     if not os.path.exists(file_dir):
