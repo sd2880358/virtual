@@ -89,10 +89,11 @@ def compute_loss(model, x):
     kl_loss = kl_divergence(logvar, mean)
     beta_loss = reco_loss + kl_loss * beta
     '''
-    logx_z = -msq(x_logit, x)
+    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
+    logx_z = tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z + beta * (logpz -  logqz_x))
+    return logx_z
 
 
 
