@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 if __name__ == "__main__":
-    ZIP_PATH = "img_align_celeba.zip"
+    ZIP_PATH = "celeba_dataset.zip"
     CROP_WIDTH = 128
     CROP_HEIGHT = 128
     OUTPUT_WIDTH = 32
