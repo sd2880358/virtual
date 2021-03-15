@@ -122,7 +122,7 @@ def generate_and_save_images(model, epoch, test_input, file_path):
 def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     @tf.function
     def train_step(model, x, optimizer):
-        for degree in range(0, 100, 10):
+        for degree in range(0,1):
             d = np.radians(degree)
             with tf.GradientTape() as tape:
                 ori_loss = compute_loss(model, x)
