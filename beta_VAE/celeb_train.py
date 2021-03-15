@@ -50,8 +50,6 @@ def ori_cross_loss(model, x, d):
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, -s], [s, c]
     phi_z = rotate_vector(r_z, r_m)
     phi_x = model.decode(phi_z)
-
-
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
 
@@ -124,12 +122,16 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         for degree in range(0, 100, 10):
             d = np.radians(degree)
             with tf.GradientTape() as tape:
-                r_x = rotate(x, d)
                 ori_loss = compute_loss(model, x)
+                '''
+                r_x = rotate(x, d)
                 rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, x, d)
                 rota_cross_l = rota_cross_loss(model, x, d)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
+                '''
+
+                total_loss = ori_loss
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
         '''
@@ -171,10 +173,15 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             for test_x in test_dataset:
                 d = np.radians(random.randint(30, 90))
                 r_x = rotate(test_x, d)
+                '''
                 total_loss = rota_cross_loss(model, test_x, d) \
                              + ori_cross_loss(model, test_x, d) \
                              + compute_loss(model, test_x) \
-                             + reconstruction_loss(model, r_x)
+                             + reconstruction_loss(model, r_x)                
+                
+                '''
+                total_loss = compute_loss(model, test_x)
+
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
@@ -245,7 +252,7 @@ if __name__ == '__main__':
     train_images = normalize(dataset[:train_size, :, :, :])
     test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
-    latent_dim = 100
+    latent_dim = 64
     epochs = 100
     inception_model = Inception_score()
     model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])

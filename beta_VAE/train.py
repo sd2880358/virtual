@@ -299,12 +299,9 @@ def compute_and_save_mnist_score(model, classifier, epoch, filePath):
 
 
 if __name__ == '__main__':
-    filename = './CelebA/CelebA/Anno/list_attr_celeba.txt'
-    imagepath = '../data/CelebA/Img/img_align_celeba/'
-    celebData = 0
-    (celebData, labels, imageNames) = dataloader2(imagepath, filename)
-    train_set = preprocess_images(train_set)
-    test_images = preprocess_images(test_dataset)
+    (train_images, train_labels), (test_images, test_labbels) = tf.keras.datasets.mnist.load_data()
+    train_images = preprocess_images(train_images)
+    test_images = preprocess_images(test_images)
     batch_size = 32
     latent_dim = 8
     num_examples_to_generate = 16
