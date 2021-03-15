@@ -81,16 +81,13 @@ def compute_loss(model, x):
     mean, logvar = model.encode(x)
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
-    '''
-    reco_loss = reconstruction_loss(x_logit, x)
-    kl_loss = kl_divergence(logvar, mean)
-    beta_loss = reco_loss + kl_loss * beta
-    '''
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    '''
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z + beta * (logpz -  logqz_x))
+    '''
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    return -tf.reduce_mean(logx_z)
 
 
 
@@ -119,20 +116,31 @@ def generate_and_save_images(model, epoch, test_input, file_path):
 def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     @tf.function
     def train_step(model, x, optimizer):
-        #for degree in range(0, 100, 10):
-        d = np.radians(degree)
-        with tf.GradientTape() as tape:
-            ori_loss = compute_loss(model, x)
-            '''
+        for degree in range(0, 100, 10):
+            d = np.radians(degree)
+            with tf.GradientTape() as tape:
+                ori_loss = compute_loss(model, x)
+                '''
                 r_x = rotate(x, d)
                 rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, x, d)
                 rota_cross_l = rota_cross_loss(model, x, d)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-            '''
-            total_loss = ori_loss
+                '''
+
+                total_loss = ori_loss
+            gradients = tape.gradient(total_loss, model.trainable_variables)
+            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        '''
+        with tf.GradientTape() as tape:
+            r_x = rotate(x, d)
+            rota_loss = compute_loss(model, r_x)
+        gradients = tape.gradient(rota_loss, model.trainable_variables)  
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        with tf.GradientTape() as tape:
         gradients = tape.gradient(total_loss, model.trainable_variables)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        '''
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
                                optimizer=optimizer)
