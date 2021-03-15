@@ -83,7 +83,7 @@ def compute_loss(model, x):
     beta = model.beta
     mean, logvar = model.encode(x)
     z = model.reparameterize(mean, logvar)
-    x_logit = model.decode(z)
+    x_logit = model.sample(z)
     '''
     reco_loss = reconstruction_loss(x_logit, x)
     kl_loss = kl_divergence(logvar, mean)
