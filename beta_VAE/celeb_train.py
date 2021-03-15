@@ -163,9 +163,11 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         generate_and_save_images(model, epoch, r_sample, "rotate_image")
         if ((epoch + 1)%1 == 0):
             end_time = time.time()
-            #ckpt_save_path = ckpt_manager.save()
+            '''
+            ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
-                                                        ckpt_save_path))
+                                                        ckpt_save_path))            
+            '''
             for test_x in test_dataset:
                 d = np.radians(random.randint(30, 90))
                 r_x = rotate(test_x, d)
