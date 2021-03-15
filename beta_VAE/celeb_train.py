@@ -14,7 +14,7 @@ from inception_score import Inception_score
 from load_data import load_celeba
 
 
-optimizer = tf.keras.optimizers.Adam(2e-6, beta_1=0.5)
+optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 mbs = tf.losses.MeanAbsoluteError()
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
@@ -93,8 +93,7 @@ def compute_loss(model, x):
     logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1]))
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return logx_z + -tf.reduce_mean(beta * (logpz + logqz_x))
-
+    return logx_z
 
 
 
