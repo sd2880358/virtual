@@ -85,12 +85,14 @@ def compute_loss(model, x):
     reco_loss = reconstruction_loss(x_logit, x)
     kl_loss = kl_divergence(logvar, mean)
     beta_loss = reco_loss + kl_loss * beta
-    '''
+    
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
+    
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    '''
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z + beta * (logpz -  logqz_x))
+    return -tf.reduce_mean( beta * (logpz -  logqz_x))
 
 
 
@@ -130,7 +132,6 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 rota_cross_l = rota_cross_loss(model, x, d)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 '''
-
                 total_loss = ori_loss
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -185,7 +186,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epoch, elbo, end_time - start_time))
+                  .format(epoch + 1, elbo, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
