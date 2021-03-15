@@ -109,3 +109,4 @@ class Classifier(tf.keras.Model):
             scores.append(is_score)
         # average across images
         return scores
+

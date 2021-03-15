@@ -1,5 +1,5 @@
 import tensorflow as tf
-from model import CVAE, Classifier
+from celeb_model import CVAE
 from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
 import random
@@ -83,14 +83,13 @@ def compute_loss(model, x):
     beta = model.beta
     mean, logvar = model.encode(x)
     z = model.reparameterize(mean, logvar)
-    x_logit = model.decode(z, apply_sigmoid=True)
+    x_logit = model.decode(z)
     '''
     reco_loss = reconstruction_loss(x_logit, x)
     kl_loss = kl_divergence(logvar, mean)
     beta_loss = reco_loss + kl_loss * beta
     '''
-    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    logx_z = msq(x_logit, x)
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
     return -tf.reduce_mean(logx_z + beta * (logpz -  logqz_x))
