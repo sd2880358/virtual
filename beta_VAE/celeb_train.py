@@ -39,6 +39,9 @@ def rotate_vector(vector, matrix):
     test = matvec(matrix, vector)
     return test
 
+def msq(pred, label):
+    return tf.keras.losses.MeanSquaredError()(pred, label)
+
 
 def ori_cross_loss(model, x, d):
     r_x = rotate(x, d)
@@ -90,9 +93,10 @@ def compute_loss(model, x):
     
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     '''
+    logx_z = msq(x_logit, x)
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean( beta * (logpz -  logqz_x))
+    return -tf.reduce_mean(logx_z + beta * (logpz -  logqz_x))
 
 
 
