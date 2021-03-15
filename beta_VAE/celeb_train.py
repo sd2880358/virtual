@@ -81,7 +81,7 @@ def rota_cross_loss(model, x, d):
 
 def compute_loss(model, x):
     beta = model.beta
-    mean, logvar = model.encode(x, training=True)
+    mean, logvar = model.encode(x)
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
     '''
