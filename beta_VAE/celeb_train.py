@@ -247,4 +247,5 @@ if __name__ == '__main__':
     date = '3_14/'
     file_path = 'test'
     start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+    print("test")
 
