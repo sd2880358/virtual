@@ -191,6 +191,8 @@ def compute_inception_score(model, d):
 
 def compute_and_save_inception_score(model, filePath):
     start_time = time.time()
+    best_fid, best_mean, base_std = inception_model.compute_score(test_images, test_images)
+    base_line_fid, base_line_mean, base_line_std = compute_inception_score(model, 0)
     in_range = random.randint(0,90)
     in_range_fid, \
     in_range_inception_mean, \
@@ -204,6 +206,10 @@ def compute_and_save_inception_score(model, filePath):
     out_range_90_inception_mean, \
     out_range_90_inception_std = compute_inception_score(model, out_range_90)
     df = pd.DataFrame({
+            "best_fid": best_fid,
+            "best_mean": best_mean,
+            "base_line_fid": base_line_fid,
+            "base_line_mean": base_line_mean,
             "in_range_fid":in_range_fid,
             "in_range_mean": in_range_inception_mean,
             "in_range_std": in_range_inception_std,
