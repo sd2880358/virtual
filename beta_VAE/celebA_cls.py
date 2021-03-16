@@ -60,6 +60,9 @@ def compute_score(X, Y, n_split=10, eps=1E-16):
         subset_X = prediction[ix_start:ix_end, :]
         score_list.append(inception_score(subset_X, eps))
     is_avg, is_std = np.mean(score_list), np.std(score_list)
+    ckpt_save_path = cls_manager.save()
+    print('Saving checkpoint for epoch {} at {}'.format(1,
+                                                        ckpt_save_path))
     return fid, is_avg, is_std
 
 if __name__ == '__main__':
