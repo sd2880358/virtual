@@ -68,13 +68,13 @@ def compute_score(X, Y, n_split=10, eps=1E-16):
 if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     batch_size = 60
-    epochs = 30
+    epochs = 20
     celeba = CelebA(drop_features=[
     'Attractive',
     'Pale_Skin',
     'Blurry',
     ])
-    train_datagen = ImageDataGenerator(rotation_range=20,
+    train_datagen = ImageDataGenerator(rotation_range=100,
                                        rescale=1./255,
                                     width_shift_range=0.2,
                                     height_shift_range=0.2,
