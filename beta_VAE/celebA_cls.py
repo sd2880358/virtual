@@ -42,7 +42,14 @@ def calculate_fid(real, fake):
     fid = ssdiff + np.trace(sigma1 + sigma2 - 2.0 * covmean)
     return fid
 
-def compute_score(model, X, Y, n_split=10, eps=1E-16):
+def compute_score(X, Y, n_split=10, eps=1E-16):
+    model = build_model(38)
+    checkpoint_path = "./checkpoints/celebA"
+    cls = tf.train.Checkpoint(model=model)
+    cls_manager = tf.train.CheckpointManager(cls, checkpoint_path, max_to_keep=5)
+    if cls_manager.latest_checkpoint:
+        cls.restore(cls_manager.latest_checkpoint)
+        print('classifier checkpoint restored!!')
     prediction = model.predict(X)
     actual = model.predict(Y)
     fid = calculate_fid(prediction, actual)
