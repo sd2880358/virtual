@@ -29,6 +29,7 @@ if __name__ == '__main__':
     'Pale_Skin',
     'Blurry',
     ])
+    print(celeba.features_name)
     train_datagen = ImageDataGenerator(rotation_range=20,
                                        rescale=1./255,
                                     width_shift_range=0.2,
@@ -69,6 +70,7 @@ if __name__ == '__main__':
     checkpoint_path = "./checkpoints/" + filePath
     ckpt = tf.train.Checkpoint(model=model)
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
+    print(len(train_generator))
     history = model.fit_generator(
         train_generator,
         epochs=epochs,
