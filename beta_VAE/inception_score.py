@@ -10,8 +10,8 @@ from math import ceil
 class Inception_score(tf.keras.Model):
     def __init__(self):
         super(Inception_score, self).__init__()
-        self.fid_model = InceptionV3(include_top=False, pooling='avg', input_shape=[150, 150, 3])
-        self.incep_model = InceptionV3(include_top=False, input_shape=[150, 150, 3])
+        self.model = InceptionV3(include_top=False, pooling='avg', input_shape=[150, 150, 3], classes=10)
+
     def scale_images(self, images, new_shape):
         images_list = list()
         for image in images:
@@ -45,15 +45,14 @@ class Inception_score(tf.keras.Model):
     def compute_score(self, X, Y, n_split=10, eps=1E-16):
         data_X = self.process_data(X)
         data_Y = self.process_data(Y)
-        fid_prediction = self.fid_model.predict(data_X)
-        actual = self.fid_model.predict(data_Y)
-        fid = self.calculate_fid(actual, fid_prediction)
-        inception_prediction = self.incep_model(data_X)
+        prediction = self.model.predict(data_X)
+        actual = self.model.predict(data_Y)
+        fid = self.calculate_fid(prediction, actual)
         score_list = []
-        n_part = floor(inception_prediction.shape[0] / n_split)
+        n_part = floor(prediction.shape[0] / n_split)
         for i in range(n_split):
             ix_start, ix_end = i * n_part, (i + 1) * n_part
-            subset_X = inception_prediction[ix_start:ix_end, :]
+            subset_X = prediction[ix_start:ix_end, :]
             score_list.append(self.inception_score(subset_X, eps))
         is_avg, is_std = np.mean(score_list), np.std(score_list)
-        return ceil(fid), is_avg, is_std
+        return fid, is_avg, is_std
