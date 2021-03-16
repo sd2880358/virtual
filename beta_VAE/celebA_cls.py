@@ -4,8 +4,11 @@ from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from load_data import load_celeba
 from celebA import CelebA
-
+import numpy as np
 import tensorflow as tf
+from math import ceil, floor
+from scipy.linalg import sqrtm
+
 def build_model(num_features):
     base = MobileNetV2(input_shape=(32, 32, 3),
                        weights=None,
@@ -17,8 +20,40 @@ def build_model(num_features):
     x = BatchNormalization()(x)
     x = Dropout(0.3)(x)
     top = Dense(num_features, activation='sigmoid')(x)
-
     return Model(inputs=base.input, outputs=top)
+
+def inception_score(p_yx, eps):
+    p_y = np.expand_dims(p_yx.mean(axis=0), 0)
+    kl_d = p_yx * (np.log(p_yx + eps) - np.log(p_y + eps))
+    sum_kl_d = kl_d.sum(axis=1)
+    avg_kl_d = np.mean(sum_kl_d)
+    is_score = np.exp(avg_kl_d)
+    return ceil(is_score)
+
+
+
+def calculate_fid(real, fake):
+    mu1, sigma1 = real.mean(axis=0), np.cov(real, rowvar=False)
+    mu2, sigma2 = fake.mean(axis=0), np.cov(fake, rowvar=False)
+    ssdiff = np.sum((mu1 - mu2) ** 2.0)
+    covmean = sqrtm(sigma1.dot(sigma2))
+    if np.iscomplexobj(covmean):
+        covmean = covmean.real
+    fid = ssdiff + np.trace(sigma1 + sigma2 - 2.0 * covmean)
+    return fid
+
+def compute_score(model, X, Y, n_split=10, eps=1E-16):
+    prediction = model.predict(X)
+    actual = model.predict(Y)
+    fid = calculate_fid(prediction, actual)
+    score_list = []
+    n_part = floor(prediction.shape[0] / n_split)
+    for i in range(n_split):
+        ix_start, ix_end = i * n_part, (i + 1) * n_part
+        subset_X = prediction[ix_start:ix_end, :]
+        score_list.append(inception_score(subset_X, eps))
+    is_avg, is_std = np.mean(score_list), np.std(score_list)
+    return fid, is_avg, is_std
 
 if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")

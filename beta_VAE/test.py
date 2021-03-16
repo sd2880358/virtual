@@ -12,7 +12,7 @@ from IPython import display
 import pandas as pd
 from inception_score import Inception_score
 from load_data import load_celeba
-
+from celebA_cls import build_model, compute_score
 
 optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 mbs = tf.losses.MeanAbsoluteError()
@@ -118,7 +118,7 @@ def generate_and_save_images(model, epoch, test_input, file_path):
 
 
 
-def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
+def start_train(epochs, model, cls, train_dataset, test_dataset, date, filePath):
     @tf.function
     def train_step(model, x, optimizer):
         for degree in range(0, 100, 10):
@@ -170,14 +170,14 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epoch + 1, elbo, end_time - start_time))
 
-    compute_and_save_inception_score(model, file_path)
+    compute_and_save_inception_score(model, cls, file_path)
 
 def normalize(image):
   image = tf.cast(image, tf.float32)
   return image
 
 
-def compute_inception_score(model, d):
+def compute_inception_score(model, cls, d):
     mean, logvar = model.encode(test_images)
     r_m = np.identity(model.latent_dim)
     z = model.reparameterize(mean, logvar)
@@ -186,25 +186,25 @@ def compute_inception_score(model, d):
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
     rota_z = matvec(tf.cast(r_m, dtype=tf.float32), z)
     phi_x = model.sample(rota_z)
-    return inception_model.compute_score(r_x, phi_x)
+    return compute_score(cls, r_x, phi_x)
 
 
-def compute_and_save_inception_score(model, filePath):
+def compute_and_save_inception_score(model, cls, filePath):
     start_time = time.time()
-    best_fid, best_mean, base_std = inception_model.compute_score(test_images, test_images)
+    best_fid, best_mean, base_std = compute_score(cls, test_images, test_images)
     base_line_fid, base_line_mean, base_line_std = compute_inception_score(model, 0)
     in_range = random.randint(0,90)
     in_range_fid, \
     in_range_inception_mean, \
-    in_range_inception_std = compute_inception_score(model, in_range)
+    in_range_inception_std = compute_inception_score(model, cls, in_range)
     out_range_30 = random.randint(91, 140)
     out_range_30_fid, \
     out_range_30_inception_mean, \
-    out_range_30_inception_std = compute_inception_score(model, out_range_30)
+    out_range_30_inception_std = compute_inception_score(model, cls, out_range_30)
     out_range_90 = random.randint(141, 180)
     out_range_90_fid, \
     out_range_90_inception_mean, \
-    out_range_90_inception_std = compute_inception_score(model, out_range_90)
+    out_range_90_inception_std = compute_inception_score(model, cls, out_range_90)
     df = pd.DataFrame({
             "best_fid": best_fid,
             "best_mean": best_mean,
@@ -244,6 +244,13 @@ if __name__ == '__main__':
     epochs = 1
     inception_model = Inception_score()
     model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
+    cls = build_model(38)
+    classifier_path = checkpoint_path = "./checkpoints/celebA"
+    cls = tf.train.Checkpoint(cls=cls)
+    cls_manager = tf.train.CheckpointManager(cls, classifier_path, max_to_keep=5)
+    if cls_manager.latest_checkpoint:
+        cls.restore(cls_manager.latest_checkpoint)
+        print('classifier checkpoint restored!!')
     batch_size = 32
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                          .shuffle(train_size).batch(batch_size))
@@ -251,5 +258,5 @@ if __name__ == '__main__':
                         .shuffle(test_size).batch(batch_size))
     date = '3_14/'
     file_path = 'test'
-    start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+    start_train(epochs, model, cls, train_dataset, test_dataset, date, file_path)
 
