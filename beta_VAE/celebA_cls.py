@@ -42,10 +42,14 @@ if __name__ == '__main__':
     valid_datagen = ImageDataGenerator(rescale=1./255)
     train_split = celeba.split('training'  , drop_zero=False)
     valid_split = celeba.split('validation', drop_zero=False)
-    train_set = dataset[train_split.index]
-    train_datagen.fit(train_set)
-    train_generator = train_datagen.flow(
-        train_set,
+    train_generator = train_datagen.flow_from_dataframe(
+        dataframe=train_split,
+        directory=celeba.images_folder,
+        x_col='image_id',
+        y_col=celeba.features_name,
+        target_size=(224, 224),
+        batch_size=batch_size,
+        class_mode='other'
     )
     valid_generator = valid_datagen.flow_from_dataframe(
         dataframe=valid_split,
