@@ -43,7 +43,7 @@ def calculate_fid(real, fake):
     return fid
 
 def compute_score(X, Y, n_split=10, eps=1E-16):
-    model = build_model(38)
+    model = build_model(37)
     checkpoint_path = "./checkpoints/celebA"
     cls = tf.train.Checkpoint(model=model)
     cls_manager = tf.train.CheckpointManager(cls, checkpoint_path, max_to_keep=5)
