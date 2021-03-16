@@ -241,7 +241,7 @@ if __name__ == '__main__':
     test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
     latent_dim = 64
-    epochs = 100
+    epochs = 1
     inception_model = Inception_score()
     model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
     batch_size = 32
