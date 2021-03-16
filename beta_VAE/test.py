@@ -170,7 +170,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epoch + 1, elbo, end_time - start_time))
 
-    #compute_and_save_inception_score(model, file_path)
+    compute_and_save_inception_score(model, file_path)
 
 def normalize(image):
   image = tf.cast(image, tf.float32)
