@@ -17,6 +17,7 @@ from load_data import load_celeba
 optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 mbs = tf.losses.MeanAbsoluteError()
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+print('test')
 
 def reconstruction_loss(model, X):
     mean, logvar = model.encode(X)
@@ -226,7 +227,6 @@ def compute_and_save_inception_score(model, filePath):
 
 
 
-print('test')
 if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     train_size = 10000
