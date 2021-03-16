@@ -29,7 +29,6 @@ if __name__ == '__main__':
     'Pale_Skin',
     'Blurry',
     ])
-    print(celeba.features_name)
     train_datagen = ImageDataGenerator(rotation_range=20,
                                        rescale=1./255,
                                     width_shift_range=0.2,
@@ -38,8 +37,6 @@ if __name__ == '__main__':
                                     zoom_range=0.2,
                                     horizontal_flip=True,
                                     fill_mode='nearest')
-
-
     valid_datagen = ImageDataGenerator(rescale=1./255)
     train_split = celeba.split('training'  , drop_zero=False)
     valid_split = celeba.split('validation', drop_zero=False)
@@ -65,7 +62,6 @@ if __name__ == '__main__':
     model.compile(loss='cosine_proximity',
                   optimizer='adadelta',
                   metrics='binary_accuracy')
-
     filePath = "./celebA"
     checkpoint_path = "./checkpoints/" + filePath
     ckpt = tf.train.Checkpoint(model=model)
