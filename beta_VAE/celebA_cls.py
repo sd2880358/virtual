@@ -59,8 +59,8 @@ if __name__ == '__main__':
         class_mode='other'
     )
     model = build_model(num_features=celeba.num_features)
-    model.compile(loss='cosine_proximity',
-                  optimizer='adadelta',
+    model.compile(loss='binary_crossentropy',
+                  optimizer='adam',
                   metrics='binary_accuracy')
     filePath = "./celebA"
     checkpoint_path = "./checkpoints/" + filePath
