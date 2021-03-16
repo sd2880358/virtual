@@ -8,7 +8,7 @@ class CelebA():
          - Split the dataset into 'training', 'test' or 'validation' partition.
     '''
 
-    def __init__(self, main_folder='./CelebA/', selected_features=None, drop_features=[]):
+    def __init__(self, main_folder='../CelebA/', selected_features=None, drop_features=[]):
         self.main_folder = main_folder
         self.images_folder = os.path.join(main_folder, 'img_align_celeba/')
         self.attributes_path = os.path.join(main_folder, 'list_attr_celeba.csv')
