@@ -48,7 +48,7 @@ class Inception_score(tf.keras.Model):
         fid_prediction = self.fid_model.predict(data_X)
         actual = self.fid_model.predict(data_Y)
         fid = self.calculate_fid(actual, fid_prediction)
-        inception_prediction = self.incep_model(X)
+        inception_prediction = self.incep_model(data_X)
         score_list = []
         n_part = floor(inception_prediction.shape[0] / n_split)
         for i in range(n_split):
