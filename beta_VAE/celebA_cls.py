@@ -112,7 +112,7 @@ if __name__ == '__main__':
     ckpt = tf.train.Checkpoint(model=model)
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
     if ckpt_manager.latest_checkpoint:
-        ckpt_manager.restore(ckpt_manager.latest_checkpoint)
+        ckpt.restore(ckpt_manager.latest_checkpoint)
         print('classifier checkpoint restored!!')
     print(len(train_generator))
     history = model.fit_generator(
