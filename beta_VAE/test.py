@@ -1,5 +1,5 @@
 import tensorflow as tf
-from model import CVAE
+from model2 import CVAE
 from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
 import random
