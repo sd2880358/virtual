@@ -46,6 +46,10 @@ class CVAE(tf.keras.Model):
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
+                filters=32, kernel_size=3, strides=2, padding='same', use_bias=False),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.LeakyReLU(),
+            tf.keras.layers.Conv2DTranspose(
                 filters=self.output_s, kernel_size=3, strides=1, padding='same'),
         ]
     )
