@@ -12,7 +12,7 @@ from IPython import display
 import pandas as pd
 from inception_score import Inception_score
 from load_data import load_celeba
-from celebA_cls import build_model, compute_score
+from celebA_cls import compute_score
 
 optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 mbs = tf.losses.MeanAbsoluteError()
@@ -241,7 +241,7 @@ if __name__ == '__main__':
     test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
     latent_dim = 64
-    epochs = 1
+    epochs = 30
     inception_model = Inception_score()
     model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
     batch_size = 32
