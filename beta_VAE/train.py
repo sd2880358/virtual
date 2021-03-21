@@ -160,10 +160,12 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         scores = compute_mnist_score(model, classifier, z, theta, r_m)
         in_range_socres.append(scores)
     score = np.mean(in_range_socres)
+    iteration = 0
     while (score <= 6.7):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
+            iteration += 1
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
         epochs += 1
@@ -182,7 +184,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epochs + 1,
                                                         ckpt_save_path))
-            compute_and_save_mnist_score(model, classifier, epochs, file_path)
+            compute_and_save_mnist_score(model, classifier, iteration, file_path)
             for test_x in test_dataset:
                 d = np.radians(random.randint(30, 90))
                 r_x = rotate(test_x, d)
@@ -299,9 +301,9 @@ def compute_and_save_mnist_score(model, classifier, epoch, filePath):
 
 
 if __name__ == '__main__':
-    (train_images, train_labels), (test_images, test_labbels) = tf.keras.datasets.mnist.load_data()
-    train_images = preprocess_images(train_images)
-    test_images = preprocess_images(test_images)
+    (train_set, train_labels), (test_dataset, test_labels) = tf.keras.datasets.mnist.load_data()
+    train_set = preprocess_images(train_set)
+    test_images = preprocess_images(test_dataset)
     batch_size = 32
     latent_dim = 8
     num_examples_to_generate = 16
@@ -334,4 +336,5 @@ if __name__ == '__main__':
         str_i = str(i)
         file_path = 'sample_test' + str_i
         start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+
 

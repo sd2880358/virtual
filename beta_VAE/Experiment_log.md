@@ -1,7 +1,8 @@
 # Model Structure:
 
 ## 1st Generation:
-Encoder: 2 Conv2D(layers 3 by 3 filter), decoder: 2 Conv2D (2,2) filter.
+-  Latent Dimension: MNIST 8  , Celeb 64 
+- Encoder: 2 Conv2D(layers 3 by 3 filter), decoder: 2 Conv2D (2,2) filter.
 ```python
     self.encoder = tf.keras.Sequential(
         [
@@ -36,4 +37,5 @@ Encoder: 2 Conv2D(layers 3 by 3 filter), decoder: 2 Conv2D (2,2) filter.
 ```
 
 ## 2nd Generation (3/17/21)
-    3 conv2d encoder, 3 conv2d layers decoder
+-  Latent Dimension: MNIST 8  , Celeb 64 
+-  3 conv2d encoder, 3 conv2d layers decoder
