@@ -11,7 +11,6 @@ import os
 from IPython import display
 import pandas as pd
 from inception_score import Inception_score
-import load_data
 
 optimizer = tf.keras.optimizers.Adam(1e-4)
 mbs = tf.losses.MeanAbsoluteError()
@@ -180,7 +179,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         score = np.mean(in_range_socres)
         #generate_and_save_images(model, epochs, test_sample, file_path)
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if ((epochs + 1)%10 == 0) or (score > 6.7):
+        if ((epochs + 1)%5 == 0) or (score > 6.7):
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epochs + 1,
                                                         ckpt_save_path))
@@ -332,7 +331,7 @@ if __name__ == '__main__':
                          .shuffle(train_size).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
-        date = '3_4/'
+        date = '3_21/'
         str_i = str(i)
         file_path = 'sample_test' + str_i
         start_train(epochs, model, train_dataset, test_dataset, date, file_path)
