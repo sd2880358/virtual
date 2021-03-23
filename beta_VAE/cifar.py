@@ -1,6 +1,6 @@
 import tensorflow as tf
 from model2 import CVAE
-from tensorflow.keras import datasets, layers, models
+from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
 import random
 import time
@@ -233,11 +233,11 @@ def compute_and_save_inception_score(model, filePath):
 
 
 if __name__ == '__main__':
-    (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+    (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.cifar10.load_data()
     train_size = 50000
     test_size = 10000
-    test_size_end = train_size + test_size
-    train_images, test_images = train_images / 255.0, test_images / 255.0
+    train_set = preprocess_images(train_images)
+    test_images = preprocess_images(test_images)
     batch_size = 32
     latent_dim = 64
     epochs = 30
