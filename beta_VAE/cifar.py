@@ -94,7 +94,9 @@ def compute_loss(model, x):
     logqz_x = log_normal_pdf(z, mean, logvar)
     return -tf.reduce_mean(logx_z + beta * (logpz - logqz_x))
 
-
+def preprocess_images(images):
+  images = images.reshape((images.shape[0], 28, 28, 1)) / 255.
+  return np.where(images > .5, 1.0, 0.0).astype('float32')
 
 def generate_and_save_images(model, epoch, test_input, file_path):
     mean, logvar = model.encode(test_input)
@@ -231,27 +233,24 @@ def compute_and_save_inception_score(model, filePath,iteration):
 
 
 if __name__ == '__main__':
-    (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.cifar10.load_data()
-    train_size = 50000
-    test_size = 10000
-    train_images, test_images = train_images / 255.0, test_images / 255.0
+    (train_set, train_labels), (test_dataset, test_labels) = tf.keras.datasets.cifar10.load_data()
+    train_set = preprocess_images(train_set)
+    test_images = preprocess_images(test_dataset)
     batch_size = 32
     latent_dim = 64
-    test_images = normalize(test_images)
     epochs = 30
-    inception_model = Inception_score()
     batch_size = 32
+    test_size = 10000
     date = '3_23/'
     for i in range(10, 0, -1):
         epochs = 0
         model = CVAE(latent_dim=latent_dim, beta=3, shape=[32, 32, 3])
         sample_size = i * 100
         train_size = sample_size * 10
-        train_images = divide_dataset(train_images, train_labels, sample_size)
+        train_images = divide_dataset(train_set, train_labels, sample_size)
         #train_size = 10000
         #train_images = train_set
         batch_size = 32
-        train_images = normalize(train_images)
         train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                          .shuffle(train_size).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
