@@ -146,10 +146,12 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     generate_and_save_images(model, 0, test_sample, file_path)
     generate_and_save_images(model, 0, r_sample, "rotate_image")
     display.clear_output(wait=False)
+    iteration = 0
     for epoch in range(epochs):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
+            iteration += 1
         loss = tf.keras.metrics.Mean()
         generate_and_save_images(model, epoch, test_sample, file_path)
         generate_and_save_images(model, epoch, r_sample, "rotate_image")
@@ -169,8 +171,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epoch + 1, elbo, end_time - start_time))
-
-    compute_and_save_inception_score(model, file_path)
+            compute_and_save_inception_score(model, file_path, iteration)
 
 def normalize(image):
   image = tf.cast(image, tf.float32)
@@ -189,13 +190,14 @@ def compute_inception_score(model, d):
     return compute_score(r_x, phi_x)
 
 
-def compute_and_save_inception_score(model, filePath):
+def compute_and_save_inception_score(model, filePath, iteration):
     start_time = time.time()
     best_fid = compute_score(test_images, test_images)
     base_line_fid = compute_inception_score(model, 0)
     in_range = random.randint(0,90)
     in_range_fid = compute_inception_score(model,  in_range)
     df = pd.DataFrame({
+            'iteration':iteration,
             "best_fid": best_fid,
             "base_line_fid": base_line_fid,
             "in_range_fid":in_range_fid,
@@ -217,7 +219,6 @@ if __name__ == '__main__':
     train_size = 10000
     test_size = 2000
     test_size_end = train_size + test_size
-    label = pd.read_csv('../CelebA/identity')
     train_images = normalize(dataset[:train_size, :, :, :])
     test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
