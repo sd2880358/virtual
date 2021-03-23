@@ -49,7 +49,6 @@ def compute_score(X, Y, n_split=10, eps=1E-16):
     cls_manager = tf.train.CheckpointManager(cls, checkpoint_path, max_to_keep=5)
     if cls_manager.latest_checkpoint:
         cls.restore(cls_manager.latest_checkpoint)
-        print('classifier checkpoint restored!!')
     prediction = model.predict(X)
     actual = model.predict(Y)
     fid = calculate_fid(prediction, actual)
@@ -60,10 +59,7 @@ def compute_score(X, Y, n_split=10, eps=1E-16):
         subset_X = prediction[ix_start:ix_end, :]
         score_list.append(inception_score(subset_X, eps))
     is_avg, is_std = np.mean(score_list), np.std(score_list)
-    ckpt_save_path = cls_manager.save()
-    print('Saving checkpoint for epoch {} at {}'.format(1,
-                                                        ckpt_save_path))
-    return fid, is_avg, is_std
+    return fid
 
 if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")

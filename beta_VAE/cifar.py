@@ -174,8 +174,6 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             loss(total_loss)
         end_time = time.time()
         elbo = -loss.result()
-        print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-              .format(epoch + 1, elbo, end_time - start_time))
         degree = np.radians(random.randint(30, 90))
         for test_batch in test_dataset.take(1):
             test_sample = test_batch[0:num_examples_to_generate, :, :, :]
@@ -186,8 +184,8 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                     ckpt_save_path))
         compute_and_save_inception_score(model, file_path, iteration)
-        print('Epoch: {}, time elapse for current epoch: {}'
-              .format(epoch, end_time - start_time))
+        print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
+              .format(epoch + 1, elbo, end_time - start_time))
         print('The current score is {}'.format(score))
 
     #compute_and_save_inception_score(model, file_path)

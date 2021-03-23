@@ -23,7 +23,7 @@ def reconstruction_loss(model, X):
     Z = model.reparameterize(mean, logvar)
     X_pred = model.decode(Z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=X_pred, labels=X)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1,2,3])
     return -tf.reduce_mean(logx_z)
 
 
@@ -54,7 +54,7 @@ def ori_cross_loss(model, x, d):
     phi_z = rotate_vector(r_z, r_m)
     phi_x = model.decode(phi_z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1,2,3])
 
     return -tf.reduce_mean(logx_z)
 
@@ -71,7 +71,7 @@ def rota_cross_loss(model, x, d):
     phi_x = model.decode(phi_z)
 
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1])
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1,2,3])
 
     return -tf.reduce_mean(logx_z)
 
@@ -90,10 +90,10 @@ def compute_loss(model, x):
     beta_loss = reco_loss + kl_loss * beta
     '''
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return tf.reduce_mean(logx_z)
+    return -tf.reduce_mean(logx_z + beta * (logpz - logqz_x))
 
 
 
@@ -191,34 +191,14 @@ def compute_inception_score(model, d):
 
 def compute_and_save_inception_score(model, filePath):
     start_time = time.time()
-    best_fid, best_mean, base_std = compute_score(test_images, test_images)
-    base_line_fid, base_line_mean, base_line_std = compute_inception_score(model, 0)
+    best_fid = compute_score(test_images, test_images)
+    base_line_fid = compute_inception_score(model, 0)
     in_range = random.randint(0,90)
-    in_range_fid, \
-    in_range_inception_mean, \
-    in_range_inception_std = compute_inception_score(model,  in_range)
-    out_range_30 = random.randint(91, 140)
-    out_range_30_fid, \
-    out_range_30_inception_mean, \
-    out_range_30_inception_std = compute_inception_score(model, out_range_30)
-    out_range_90 = random.randint(141, 180)
-    out_range_90_fid, \
-    out_range_90_inception_mean, \
-    out_range_90_inception_std = compute_inception_score(model, out_range_90)
+    in_range_fid = compute_inception_score(model,  in_range)
     df = pd.DataFrame({
             "best_fid": best_fid,
-            "best_mean": best_mean,
             "base_line_fid": base_line_fid,
-            "base_line_mean": base_line_mean,
             "in_range_fid":in_range_fid,
-            "in_range_mean": in_range_inception_mean,
-            "in_range_std": in_range_inception_std,
-            "out_range_30_fid":out_range_30_fid,
-            "out_range_30_mean": out_range_30_inception_mean,
-            "out_range_30_std": out_range_30_inception_std,
-            "out_range_90_fid":out_range_90_fid,
-            "out_range_90_mean": out_range_90_inception_mean,
-            "out_range_90_std": out_range_90_inception_std,
         }, index=[1])
     file_dir = "./score/" + date + filePath
     if not os.path.exists(file_dir):
@@ -237,6 +217,7 @@ if __name__ == '__main__':
     train_size = 10000
     test_size = 2000
     test_size_end = train_size + test_size
+    label = pd.read_csv('../CelebA/identity')
     train_images = normalize(dataset[:train_size, :, :, :])
     test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
@@ -249,7 +230,7 @@ if __name__ == '__main__':
                          .shuffle(train_size).batch(batch_size))
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
-    date = '3_21/'
-    file_path = 'test'
+    date = '3_23/'
+    file_path = 'celeba'
     start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
