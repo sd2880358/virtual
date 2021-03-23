@@ -181,8 +181,12 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         elbo = -loss.result()
         print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
               .format(epoch + 1, elbo, end_time - start_time))
-        #generate_and_save_images(model, epochs, test_sample, file_path)
-        #generate_and_save_images(model, epochs, r_sample, "rotate_image")
+        degree = np.radians(random.randint(30, 90))
+        for test_batch in test_dataset.take(1):
+            test_sample = test_batch[0:num_examples_to_generate, :, :, :]
+            r_sample = rotate(test_sample, degree)
+        generate_and_save_images(model, 0, test_sample, file_path)
+        generate_and_save_images(model, 0, r_sample, "rotate_image")
         ckpt_save_path = ckpt_manager.save()
         print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                     ckpt_save_path))
@@ -252,6 +256,7 @@ if __name__ == '__main__':
     latent_dim = 64
     batch_size = 32
     test_size = 10000
+    num_examples_to_generate = 16
     date = '3_23/'
     for i in range(10, 9, -1):
         epochs = 30
