@@ -98,5 +98,7 @@ if __name__ == '__main__':
         c_t, c_l,
         epochs=epochs,
         shuffle=True,
-        callbacks=ckpt_manager.save(),
         verbose=1)
+    ckpt_save_path = ckpt_manager.save()
+    print('Saving checkpoint for epoch {} at {}'.format(1,
+                                                        ckpt_save_path))
