@@ -42,12 +42,11 @@ def calculate_fid(real, fake):
 
 def compute_score(X, Y, n_split=10, eps=1E-16):
     model = build_model(37)
-    checkpoint_path = "./checkpoints/celebA"
+    checkpoint_path = "./checkpoints/cifar"
     cls = tf.train.Checkpoint(model=model)
     cls_manager = tf.train.CheckpointManager(cls, checkpoint_path, max_to_keep=5)
     if cls_manager.latest_checkpoint:
         cls.restore(cls_manager.latest_checkpoint)
-        print('classifier checkpoint restored!!')
     prediction = model.predict(X)
     actual = model.predict(Y)
     fid = calculate_fid(prediction, actual)
@@ -59,8 +58,6 @@ def compute_score(X, Y, n_split=10, eps=1E-16):
         score_list.append(inception_score(subset_X, eps))
     is_avg, is_std = np.mean(score_list), np.std(score_list)
     ckpt_save_path = cls_manager.save()
-    print('Saving checkpoint for epoch {} at {}'.format(1,
-                                                        ckpt_save_path))
     return fid, is_avg, is_std
 
 def normalize(image):
