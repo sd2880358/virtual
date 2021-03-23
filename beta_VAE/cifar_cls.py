@@ -43,8 +43,7 @@ def calculate_fid(real, fake):
 def compute_score(X, Y, n_split=10, eps=1E-16):
     model = build_model(10)
     checkpoint_path = "./checkpoints/cifar/ckpt-11"
-    latest = tf.train.latest_checkpoint(checkpoint_path)
-    model.load_weights(latest)
+    model.load_weights(checkpoint_path)
     prediction = model.predict(X)
     actual = model.predict(Y)
     fid = calculate_fid(prediction, actual)
