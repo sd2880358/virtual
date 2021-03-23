@@ -11,8 +11,7 @@ import os
 from IPython import display
 import pandas as pd
 from inception_score import Inception_score
-from load_data import load_celeba
-from celebA_cls import compute_score
+from cifar_cls import compute_score
 
 optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 mbs = tf.losses.MeanAbsoluteError()
@@ -93,7 +92,7 @@ def compute_loss(model, x):
     logx_z = tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return tf.reduce_mean(logx_z)
+    return -tf.reduce_mean(logx_z + beta * (logpz - logqz_x))
 
 
 
@@ -114,6 +113,15 @@ def generate_and_save_images(model, epoch, test_input, file_path):
         os.makedirs(file_dir)
     plt.savefig(file_dir +'/image_at_epoch_{:04d}.png'.format(epoch))
     plt.close()
+
+def divide_dataset(train_data, train_labels, sample_size):
+  labels = pd.DataFrame({'labels': train_labels.flatten()})
+  dataset = []
+  for i in range(0, 10):
+    idx = labels[labels.labels == i].iloc[:sample_size].index
+    train_images = train_data[idx]
+    dataset.append(train_images)
+  return np.array(dataset).reshape(10 * sample_size, 32, 32, 3)
 
 
 
@@ -139,36 +147,35 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
-    degree = np.radians(random.randint(30, 90))
-    for test_batch in test_dataset.take(1):
-        test_sample = test_batch[:1, :, :, :]
-        r_sample = rotate(test_sample, degree)
-    generate_and_save_images(model, 0, test_sample, file_path)
-    generate_and_save_images(model, 0, r_sample, "rotate_image")
-    display.clear_output(wait=False)
-    for epoch in range(epochs):
+    in_range_socres = []
+    for i in range(0, 100, 10):
+        theta = np.radians(i)
+        fid, is_avg, is_std = compute_inception_score(model, theta)
+        in_range_socres.append(is_avg)
+    score = np.mean(in_range_socres)
+    iteration = 0
+    while (score <= 6.7):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
-        loss = tf.keras.metrics.Mean()
-        generate_and_save_images(model, epoch, test_sample, file_path)
-        generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if ((epoch + 1)%1 == 0):
-            end_time = time.time()
-            ckpt_save_path = ckpt_manager.save()
-            print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
-                                                        ckpt_save_path))
-            for test_x in test_dataset:
-                d = np.radians(random.randint(30, 90))
-                r_x = rotate(test_x, d)
-                total_loss = rota_cross_loss(model, test_x, d) \
-                             + ori_cross_loss(model, test_x, d) \
-                             + compute_loss(model, test_x) \
-                             + reconstruction_loss(model, r_x)
-                loss(total_loss)
-            elbo = -loss.result()
-            print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epoch + 1, elbo, end_time - start_time))
+            iteration += 1
+        end_time = time.time()
+        epochs += 1
+        in_range_socres = []
+        for i in range(0, 100, 10):
+            theta = np.radians(i)
+            fid, is_avg, is_std = compute_inception_score(model, theta)
+            in_range_socres.append(is_avg)
+        score = np.mean(in_range_socres)
+        #generate_and_save_images(model, epochs, test_sample, file_path)
+        #generate_and_save_images(model, epochs, r_sample, "rotate_image")
+        ckpt_save_path = ckpt_manager.save()
+        print('Saving checkpoint for epoch {} at {}'.format(epochs + 1,
+                                                    ckpt_save_path))
+        compute_and_save_inception_score(model, file_path, iteration)
+        print('Epoch: {}, time elapse for current epoch: {}'
+              .format(epochs, end_time - start_time))
+        print('The current score is {}'.format(score))
 
     #compute_and_save_inception_score(model, file_path)
 
@@ -189,22 +196,27 @@ def compute_inception_score(model, d):
     return compute_score(r_x, phi_x)
 
 
-def compute_and_save_inception_score(model, filePath):
+def compute_and_save_inception_score(model, filePath,iteration):
     start_time = time.time()
     best_fid, best_mean, base_std = compute_score(test_images, test_images)
     base_line_fid, base_line_mean, base_line_std = compute_inception_score(model, 0)
-    in_range = random.randint(0,90)
-    in_range_fid, \
-    in_range_inception_mean, \
-    in_range_inception_std = compute_inception_score(model,  in_range)
+    result = []
+    for i in range(0, 100, 10):
+        theta = np.radians(i)
+        in_range_fid, \
+        in_range_inception_mean, \
+        in_range_inception_std = compute_inception_score(model,  theta)
+        result.append([in_range_fid, in_range_inception_mean, in_range_inception_std])
+    fid, mean, std = np.mean(result, axis=0)
     df = pd.DataFrame({
+            'iteration': iteration,
             "best_fid": best_fid,
             "best_mean": best_mean,
             "base_line_fid": base_line_fid,
             "base_line_mean": base_line_mean,
-            "in_range_fid":in_range_fid,
-            "in_range_mean": in_range_inception_mean,
-            "in_range_std": in_range_inception_std,
+            "in_range_fid":fid,
+            "in_range_mean": mean,
+            "in_range_std": std,
         }, index=[1])
     file_dir = "./score/" + date + filePath
     if not os.path.exists(file_dir):
@@ -222,20 +234,29 @@ if __name__ == '__main__':
     (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.cifar10.load_data()
     train_size = 50000
     test_size = 10000
-    train_images = normalize(train_images)
-    test_images = normalize(test_images)
     train_images, test_images = train_images / 255.0, test_images / 255.0
     batch_size = 32
     latent_dim = 64
+    test_images = normalize(test_images)
     epochs = 30
     inception_model = Inception_score()
-    model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
     batch_size = 32
-    train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
+    date = '3_23/'
+    for i in range(10, 0, -1):
+        epochs = 0
+        model = CVAE(latent_dim=latent_dim, beta=3, shape=[32, 32, 3])
+        sample_size = i * 100
+        train_size = sample_size * 10
+        train_images = divide_dataset(train_images, train_labels, sample_size)
+        #train_size = 10000
+        #train_images = train_set
+        batch_size = 32
+        train_images = normalize(train_images)
+        train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                          .shuffle(train_size).batch(batch_size))
-    test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
+        test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
-    date = '3_22/'
-    file_path = 'cifar_10'
-    start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+        str_i = str(i)
+        file_path = 'sample_test' + str_i
+        start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
