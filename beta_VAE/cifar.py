@@ -1,5 +1,5 @@
 import tensorflow as tf
-from model2 import CVAE
+from model import CVAE
 from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
 import random
@@ -197,14 +197,6 @@ def compute_and_save_inception_score(model, filePath):
     in_range_fid, \
     in_range_inception_mean, \
     in_range_inception_std = compute_inception_score(model,  in_range)
-    out_range_30 = random.randint(91, 140)
-    out_range_30_fid, \
-    out_range_30_inception_mean, \
-    out_range_30_inception_std = compute_inception_score(model, out_range_30)
-    out_range_90 = random.randint(141, 180)
-    out_range_90_fid, \
-    out_range_90_inception_mean, \
-    out_range_90_inception_std = compute_inception_score(model, out_range_90)
     df = pd.DataFrame({
             "best_fid": best_fid,
             "best_mean": best_mean,
@@ -213,12 +205,6 @@ def compute_and_save_inception_score(model, filePath):
             "in_range_fid":in_range_fid,
             "in_range_mean": in_range_inception_mean,
             "in_range_std": in_range_inception_std,
-            "out_range_30_fid":out_range_30_fid,
-            "out_range_30_mean": out_range_30_inception_mean,
-            "out_range_30_std": out_range_30_inception_std,
-            "out_range_90_fid":out_range_90_fid,
-            "out_range_90_mean": out_range_90_inception_mean,
-            "out_range_90_std": out_range_90_inception_std,
         }, index=[1])
     file_dir = "./score/" + date + filePath
     if not os.path.exists(file_dir):

@@ -10,7 +10,7 @@ import numpy as np
 import os
 from IPython import display
 import pandas as pd
-from inception_score import Inception_score
+from scipy.linalg import sqrtm
 
 optimizer = tf.keras.optimizers.Adam(1e-4)
 mbs = tf.losses.MeanAbsoluteError()
@@ -199,52 +199,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
 
     #compute_and_save_inception_score(model, file_path)
 
-def compute_inception_score(model, d):
-    mean, logvar = model.encode(test_images)
-    r_m = np.identity(model.latent_dim)
-    z = model.reparameterize(mean, logvar)
-    r_x = rotate(test_images, d)
-    c, s = np.cos(d), np.sin(d)
-    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
-    rota_z = matvec(tf.cast(r_m, dtype=tf.float32), z)
-    phi_x = model.sample(rota_z)
-    return inception_model.compute_score(r_x, phi_x)
 
-
-def compute_and_save_inception_score(model, filePath):
-    start_time = time.time()
-    in_range = random.randint(0,90)
-    in_range_fid, \
-    in_range_inception_mean, \
-    in_range_inception_std = compute_inception_score(model, in_range)
-    out_range_30 = random.randint(91, 140)
-    out_range_30_fid, \
-    out_range_30_inception_mean, \
-    out_range_30_inception_std = compute_inception_score(model, out_range_30)
-    out_range_90 = random.randint(141, 180)
-    out_range_90_fid, \
-    out_range_90_inception_mean, \
-    out_range_90_inception_std = compute_inception_score(model, out_range_90)
-    df = pd.DataFrame({
-            "in_range_fid":in_range_fid,
-            "in_range_mean": in_range_inception_mean,
-            "in_range_std": in_range_inception_std,
-            "out_range_30_fid":out_range_30_fid,
-            "out_range_30_mean": out_range_30_inception_mean,
-            "out_range_30_std": out_range_30_inception_std,
-            "out_range_90_fid":out_range_90_fid,
-            "out_range_90_mean": out_range_90_inception_mean,
-            "out_range_90_std": out_range_90_inception_std,
-        }, index=[1])
-    file_dir = "./score/" + date + filePath
-    if not os.path.exists(file_dir):
-        os.makedirs(file_dir)
-    if not os.path.isfile(file_dir + '/inception_score.csv'):
-        df.to_csv(file_dir +'/inception_score.csv')
-    else:  # else it exists so append without writing the header
-        df.to_csv(file_dir + '/inception_score.csv', mode='a', header=False)
-    end_time = time.time()
-    print("total compute inception time {}".format(end_time-start_time))
 
 def compute_mnist_score(model, classifier, z=0, d=0, r_m=0, initial=False):
     if (initial==True):
@@ -256,8 +211,20 @@ def compute_mnist_score(model, classifier, z=0, d=0, r_m=0, initial=False):
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
     rota_z = matvec(tf.cast(r_m, dtype=tf.float32), z)
     phi_z = model.sample(rota_z)
+    fid = calculate_fid(test_images, phi_z)
     scores = classifier.mnist_score(phi_z)
-    return scores
+    return fid, scores
+
+
+def calculate_fid(real, fake):
+    mu1, sigma1 = real.mean(axis=0), np.cov(real, rowvar=False)
+    mu2, sigma2 = fake.mean(axis=0), np.cov(fake, rowvar=False)
+    ssdiff = np.sum((mu1 - mu2) ** 2.0)
+    covmean = sqrtm(sigma1.dot(sigma2))
+    if np.iscomplexobj(covmean):
+        covmean = covmean.real
+    fid = ssdiff + np.trace(sigma1 + sigma2 - 2.0 * covmean)
+    return fid
 
 
 def compute_and_save_mnist_score(model, classifier, epoch, filePath):
@@ -265,30 +232,18 @@ def compute_and_save_mnist_score(model, classifier, epoch, filePath):
     mean, logvar = model.encode(test_images)
     r_m = np.identity(model.latent_dim)
     z = model.reparameterize(mean, logvar)
+    fid_list = []
     for i in range(0, 100, 10):
         theta = np.radians(i)
-        scores = compute_mnist_score(model, classifier, z, theta, r_m)
+        fid, scores = compute_mnist_score(model, classifier, z, theta, r_m)
         in_range_socres.append(scores)
+        fid_list.append(fid)
     in_range_mean, in_range_locvar = np.mean(in_range_socres), np.std(in_range_socres)
-    out_range_30 = []
-    for i in range(100, 150, 10):
-        theta = np.radians(i)
-        scores = compute_mnist_score(model, classifier, z, theta, r_m)
-        out_range_30.append(scores)
-    out_range_30_mean, out_range_30_logvar = np.mean(out_range_30), np.mean(out_range_30)
-    out_range_90 = []
-    for i in range(150, 190, 10):
-        theta = np.radians(i)
-        scores = compute_mnist_score(model, classifier, z, theta, r_m)
-        out_range_90.append(scores)
-    out_range_90_mean, out_range_90_logvar = np.mean(out_range_90), np.mean(out_range_90)
+    fid_mean = np.mean(fid_list)
     df = pd.DataFrame({
         "in_range_mean":in_range_mean,
         "in_range_locvar": in_range_locvar,
-        "out_range_30_mean":out_range_30_mean,
-        "out_range_30_std": out_range_30_logvar,
-        "out_range_90_mean": out_range_90_mean,
-        "out_range_90_std": out_range_90_logvar
+        'fid':fid_mean
     }, index=[epoch+1])
     file_dir = "./score/" + date + filePath
     if not os.path.exists(file_dir):
@@ -313,7 +268,6 @@ if __name__ == '__main__':
     classifier_path = checkpoint_path = "./checkpoints/classifier"
     cls = tf.train.Checkpoint(classifier = classifier)
     cls_manager = tf.train.CheckpointManager(cls, classifier_path, max_to_keep=5)
-    inception_model = Inception_score()
     if cls_manager.latest_checkpoint:
         cls.restore(cls_manager.latest_checkpoint)
         print('classifier checkpoint restored!!')
@@ -331,7 +285,7 @@ if __name__ == '__main__':
                          .shuffle(train_size).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
-        date = '3_21/'
+        date = '3_22/'
         str_i = str(i)
         file_path = 'sample_test' + str_i
         start_train(epochs, model, train_dataset, test_dataset, date, file_path)
