@@ -167,7 +167,6 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             theta = np.radians(i)
             fid, is_avg, is_std = compute_inception_score(model, theta)
             in_range_socres.append(is_avg)
-        print(in_range_socres)
         score = np.mean(in_range_socres)
         loss = tf.keras.metrics.Mean()
         for test_x in test_dataset:
