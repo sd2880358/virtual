@@ -46,7 +46,7 @@ def compute_score(X, Y, n_split=10, eps=1E-16):
     cls = tf.train.Checkpoint(model=model)
     cls_manager = tf.train.CheckpointManager(cls, checkpoint_path, max_to_keep=5)
     if cls_manager.latest_checkpoint:
-        cls.load_weight(cls_manager.latest_checkpoint)
+        cls.restore(cls_manager.latest_checkpoint)
     prediction = model.predict(X)
     actual = model.predict(Y)
     fid = calculate_fid(prediction, actual)
