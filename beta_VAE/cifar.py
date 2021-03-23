@@ -148,34 +148,47 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
+    '''
     in_range_socres = []
     for i in range(0, 100, 10):
         theta = np.radians(i)
         fid, is_avg, is_std = compute_inception_score(model, theta)
         in_range_socres.append(is_avg)
     score = np.mean(in_range_socres)
+    '''
     iteration = 0
-    while (score <= 6.7):
+    for epoch in range(epochs):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
             iteration += 1
         end_time = time.time()
-        epochs += 1
         in_range_socres = []
         for i in range(0, 100, 10):
             theta = np.radians(i)
             fid, is_avg, is_std = compute_inception_score(model, theta)
             in_range_socres.append(is_avg)
         score = np.mean(in_range_socres)
+        loss = tf.keras.metrics.Mean()
+        for test_x in test_dataset:
+            d = np.radians(random.randint(30, 90))
+            r_x = rotate(test_x, d)
+            total_loss = rota_cross_loss(model, test_x, d) \
+                         + ori_cross_loss(model, test_x, d) \
+                         + compute_loss(model, test_x) \
+                         + reconstruction_loss(model, r_x)
+            loss(total_loss)
+        elbo = -loss.result()
+        print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
+              .format(epoch + 1, elbo, end_time - start_time))
         #generate_and_save_images(model, epochs, test_sample, file_path)
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         ckpt_save_path = ckpt_manager.save()
-        print('Saving checkpoint for epoch {} at {}'.format(epochs + 1,
+        print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                     ckpt_save_path))
         compute_and_save_inception_score(model, file_path, iteration)
         print('Epoch: {}, time elapse for current epoch: {}'
-              .format(epochs, end_time - start_time))
+              .format(epoch, end_time - start_time))
         print('The current score is {}'.format(score))
 
     #compute_and_save_inception_score(model, file_path)
@@ -237,12 +250,11 @@ if __name__ == '__main__':
     test_images = preprocess_images(test_dataset)
     batch_size = 32
     latent_dim = 64
-    epochs = 30
     batch_size = 32
     test_size = 10000
     date = '3_23/'
-    for i in range(10, 0, -1):
-        epochs = 0
+    for i in range(10, 9, -1):
+        epochs = 30
         model = CVAE(latent_dim=latent_dim, beta=3, shape=[32, 32, 3])
         sample_size = i * 100
         train_size = sample_size * 10
