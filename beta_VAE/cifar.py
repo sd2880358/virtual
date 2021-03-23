@@ -1,6 +1,5 @@
 import tensorflow as tf
 from model import CVAE
-from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
 import random
 import time
@@ -95,7 +94,7 @@ def compute_loss(model, x):
     return -tf.reduce_mean(logx_z + beta * (logpz - logqz_x))
 
 def preprocess_images(images):
-  images = images.reshape((images.shape[0], 28, 28, 1)) / 255.
+  images = images.reshape((images.shape[0], 32, 32, 3)) / 255.
   return np.where(images > .5, 1.0, 0.0).astype('float32')
 
 def generate_and_save_images(model, epoch, test_input, file_path):
