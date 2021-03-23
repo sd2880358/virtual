@@ -87,7 +87,7 @@ if __name__ == '__main__':
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
-    filePath = "./celebA"
+    filePath = "./cifar"
     checkpoint_path = "./checkpoints/" + filePath
     ckpt = tf.train.Checkpoint(model=model)
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
