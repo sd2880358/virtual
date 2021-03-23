@@ -147,6 +147,11 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     generate_and_save_images(model, 0, r_sample, "rotate_image")
     display.clear_output(wait=False)
     iteration = 0
+    file_dir = "./score/" + date + filePath
+    if os.path.isfile(file_dir + '/inception_score.csv'):
+        table = pd.read_csv(file_dir + '/inception_score.csv')
+        iteration = table.itertion[-1]
+        print("the current iteration is {}".format(iteration) )
     for epoch in range(epochs):
         start_time = time.time()
         for train_x in train_dataset:
