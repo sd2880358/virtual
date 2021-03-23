@@ -236,8 +236,9 @@ if __name__ == '__main__':
     (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.cifar10.load_data()
     train_size = 50000
     test_size = 10000
-    train_set = preprocess_images(train_images)
-    test_images = preprocess_images(test_images)
+    train_images = normalize(train_images)
+    test_images = normalize(test_images)
+    train_images, test_images = train_images / 255.0, test_images / 255.0
     batch_size = 32
     latent_dim = 64
     epochs = 30
