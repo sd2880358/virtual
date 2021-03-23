@@ -162,12 +162,12 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
             iteration += 1
-        end_time = time.time()
         in_range_socres = []
         for i in range(0, 100, 10):
             theta = np.radians(i)
             fid, is_avg, is_std = compute_inception_score(model, theta)
             in_range_socres.append(is_avg)
+        print(in_range_socres)
         score = np.mean(in_range_socres)
         loss = tf.keras.metrics.Mean()
         for test_x in test_dataset:
@@ -178,6 +178,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                          + compute_loss(model, test_x) \
                          + reconstruction_loss(model, r_x)
             loss(total_loss)
+        end_time = time.time()
         elbo = -loss.result()
         print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
               .format(epoch + 1, elbo, end_time - start_time))
