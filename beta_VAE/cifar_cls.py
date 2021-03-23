@@ -6,7 +6,7 @@ import tensorflow as tf
 from math import ceil, floor
 from scipy.linalg import sqrtm
 from tensorflow_addons.image import rotate
-
+import os
 def build_model(num_features):
     base = MobileNetV2(input_shape=(32, 32, 3),
                        weights=None,
@@ -42,7 +42,7 @@ def calculate_fid(real, fake):
 
 def compute_score(X, Y, n_split=10, eps=1E-16):
     model = build_model(10)
-    checkpoint_path = "./checkpoints/cifar"
+    checkpoint_path = "./checkpoints/cifar/ckpt-11"
     latest = tf.train.latest_checkpoint(checkpoint_path)
     model.load_weights(latest)
     prediction = model.predict(X)
