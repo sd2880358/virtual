@@ -1,5 +1,5 @@
 import tensorflow as tf
-from model2 import CVAE
+from model import CVAE
 from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
 import random
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
     latent_dim = 64
-    epochs = 30
+    epochs = 100
     inception_model = Inception_score()
     model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
     batch_size = 32
