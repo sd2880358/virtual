@@ -118,7 +118,7 @@ def generate_and_save_images(model, epoch, test_input, file_path):
 
 
 
-def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
+def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
     @tf.function
     def train_step(model, x, optimizer):
         for degree in range(0, 100, 10):
@@ -143,8 +143,8 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     for test_batch in test_dataset.take(1):
         test_sample = test_batch[:1, :, :, :]
         r_sample = rotate(test_sample, degree)
-    generate_and_save_images(model, 0, test_sample, file_path)
-    generate_and_save_images(model, 0, r_sample, "rotate_image")
+    #generate_and_save_images(model, 0, test_sample, file_path)
+    #generate_and_save_images(model, 0, r_sample, "rotate_image")
     display.clear_output(wait=False)
     iteration = 0
     file_dir = "./score/" + date + filePath
@@ -152,14 +152,16 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         table = pd.read_csv(file_dir + '/inception_score.csv')
         iteration = table.iteration.iloc[-1]
         print("the current iteration is {}".format(iteration))
-    for epoch in range(epochs):
+    epoch = 0
+    while (iteration < iteratons):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
             iteration += 1
         loss = tf.keras.metrics.Mean()
-        generate_and_save_images(model, epoch, test_sample, file_path)
-        generate_and_save_images(model, epoch, r_sample, "rotate_image")
+        epoch += 1
+        #generate_and_save_images(model, epoch, test_sample, file_path)
+        #generate_and_save_images(model, epoch, r_sample, "rotate_image")
         if ((epoch + 1)%1 == 0):
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
@@ -199,8 +201,12 @@ def compute_and_save_inception_score(model, filePath, iteration):
     start_time = time.time()
     best_fid = compute_score(test_images, test_images)
     base_line_fid = compute_inception_score(model, 0)
-    in_range = random.randint(0,90)
-    in_range_fid = compute_inception_score(model,  in_range)
+    tmp = []
+    for i in range(0, 100, 10):
+        degree = np.radians((i))
+        fid = compute_inception_score(model,  degree)
+        tmp.append(fid)
+    in_range_fid = np.mean(tmp)
     df = pd.DataFrame({
             'iteration':iteration,
             "best_fid": best_fid,
@@ -221,22 +227,22 @@ def compute_and_save_inception_score(model, filePath, iteration):
 
 if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
-    train_size = 10000
-    test_size = 2000
-    test_size_end = train_size + test_size
-    train_images = normalize(dataset[:train_size, :, :, :])
-    test_images = normalize(dataset[train_size:test_size_end, :, :, :])
     batch_size = 32
     latent_dim = 64
-    epochs = 100
-    inception_model = Inception_score()
-    model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
-    batch_size = 32
-    train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
-                         .shuffle(train_size).batch(batch_size))
-    test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
-                        .shuffle(test_size).batch(batch_size))
-    date = '3_23/'
-    file_path = 'celeba'
-    start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+    iteratons = 7000
+    for i in range(10, 0, -1):
+        train_size = i * 1000
+        test_size = 2000
+        test_size_end = train_size + test_size
+        train_images = normalize(dataset[:train_size, :, :, :])
+        test_images = normalize(dataset[train_size:test_size_end, :, :, :])
+        model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
+        batch_size = 32
+        train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
+                            .shuffle(train_size).batch(batch_size))
+        test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
+                            .shuffle(test_size).batch(batch_size))
+        date = '3_25/'
+        file_path = 'celeba'
+        start_train(iteratons, model, train_dataset, test_dataset, date, file_path)
 
