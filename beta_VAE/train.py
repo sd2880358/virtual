@@ -285,7 +285,7 @@ if __name__ == '__main__':
                          .shuffle(train_size).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
-        date = '3_22/'
+        date = '3_27/'
         str_i = str(i)
         file_path = 'sample_test' + str_i
         start_train(epochs, model, train_dataset, test_dataset, date, file_path)

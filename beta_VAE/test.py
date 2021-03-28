@@ -153,16 +153,19 @@ def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
         iteration = table.iteration.iloc[-1]
         print("the current iteration is {}".format(iteration))
     epoch = 0
+    step = 0
     while (iteration < iteratons):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
             iteration += 1
+            step += 1
         loss = tf.keras.metrics.Mean()
         epoch += 1
         #generate_and_save_images(model, epoch, test_sample, file_path)
         #generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if ((epoch + 1)%1 == 0):
+        if (step  >= 1000):
+            step = 0
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
@@ -235,14 +238,14 @@ if __name__ == '__main__':
         test_size = 2000
         test_size_end = train_size + test_size
         train_images = normalize(dataset[:train_size, :, :, :])
-        test_images = normalize(dataset[train_size:test_size_end, :, :, :])
+        test_images = normalize(dataset[200000: , :, :, :])
         model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
         batch_size = 32
         train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                             .shuffle(train_size).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                             .shuffle(test_size).batch(batch_size))
-        date = '3_24/'
+        date = '3_27/'
         str_i = str(i)
         file_path = 'sample_test' + str_i
         start_train(iteratons, model, train_dataset, test_dataset, date, file_path)
