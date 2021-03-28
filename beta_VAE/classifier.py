@@ -18,7 +18,7 @@ for d in range(0, 180, 10):
 classifier.compile(optimizer='adam',
                    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                    metrics=['accuracy'])
-classifier.fit(c_t, c_l, epochs=50, verbose=2)
+classifier.fit(c_t, c_l, epochs=50, verbose=1)
 filePath = "./classifier"
 checkpoint_path = "./checkpoints/" + filePath
 ckpt = tf.train.Checkpoint(classifier=classifier)
