@@ -211,9 +211,9 @@ def compute_mnist_score(model, classifier, z=0, d=0, r_m=0, initial=False):
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
     rota_z = matvec(tf.cast(r_m, dtype=tf.float32), z)
     phi_z = model.sample(rota_z)
-    fid = calculate_fid(test_images, phi_z)
+    #fid = calculate_fid(test_images, phi_z)
     scores = classifier.mnist_score(phi_z)
-    return fid, scores
+    return scores
 
 
 def calculate_fid(real, fake):
@@ -235,15 +235,12 @@ def compute_and_save_mnist_score(model, classifier, epoch, filePath):
     fid_list = []
     for i in range(0, 100, 10):
         theta = np.radians(i)
-        fid, scores = compute_mnist_score(model, classifier, z, theta, r_m)
+        scores = compute_mnist_score(model, classifier, z, theta, r_m)
         in_range_socres.append(scores)
-        fid_list.append(fid)
     in_range_mean, in_range_locvar = np.mean(in_range_socres), np.std(in_range_socres)
-    fid_mean = np.mean(fid_list)
     df = pd.DataFrame({
         "in_range_mean":in_range_mean,
         "in_range_locvar": in_range_locvar,
-        'fid':fid_mean
     }, index=[epoch+1])
     file_dir = "./score/" + date + filePath
     if not os.path.exists(file_dir):
