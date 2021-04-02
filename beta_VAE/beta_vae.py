@@ -265,7 +265,7 @@ if __name__ == '__main__':
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
     date = '4_2/'
-    file_path = 'normal_beta_vae/'
+    file_path = 'mnist_beta_vae/'
     start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
 
