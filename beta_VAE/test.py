@@ -12,7 +12,6 @@ from IPython import display
 import pandas as pd
 from inception_score import Inception_score
 from load_data import load_celeba
-from celebA_cls import compute_score
 
 optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 mbs = tf.losses.MeanAbsoluteError()
@@ -197,12 +196,12 @@ def compute_inception_score(model, d):
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
     rota_z = matvec(tf.cast(r_m, dtype=tf.float32), z)
     phi_x = model.sample(rota_z)
-    return compute_score(r_x, phi_x)
+    return inception_model.compute_score(r_x, phi_x)
 
 
 def compute_and_save_inception_score(model, filePath, iteration):
     start_time = time.time()
-    best_fid = compute_score(test_images, test_images)
+    best_fid = inception_model.compute_score(test_images, test_images)
     base_line_fid = compute_inception_score(model, 0)
     tmp = []
     for i in range(0, 100, 10):
@@ -233,6 +232,7 @@ if __name__ == '__main__':
     batch_size = 32
     latent_dim = 64
     iteratons = 7000
+    inception_model = Inception_score()
     for i in range(1,5):
         train_size = 10000
         test_size = 2000
