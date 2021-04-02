@@ -180,10 +180,10 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         #generate_and_save_images(model, epochs, test_sample, file_path)
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch + 1)%1 == 0:
-            ckpt_save_path = ckpt_manager.save()
-            print('Saving checkpoint for epoch {} at {}'.format(epochs + 1,
-                                                        ckpt_save_path))
-            compute_and_save_mnist_score(model, classifier, iteration, file_path)
+            #ckpt_save_path = ckpt_manager.save()
+            #print('Saving checkpoint for epoch {} at {}'.format(epochs + 1,
+                                                        #ckpt_save_path))
+            #compute_and_save_mnist_score(model, classifier, iteration, file_path)
             for test_x in test_dataset:
                 d = np.radians(random.randint(30, 90))
                 r_x = rotate(test_x, d)
