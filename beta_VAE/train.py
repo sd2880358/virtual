@@ -90,7 +90,7 @@ def compute_loss(model, x):
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z + beta * (logpz -  logqz_x))
+    return -tf.reduce_mean(logx_z + beta * (logqz_x))
 
 
 def generate_and_save_images(model, epoch, test_sample, file_path):
@@ -160,7 +160,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         in_range_socres.append(scores)
     score = np.mean(in_range_socres)
     iteration = 0
-    while (score <= 6.7):
+    for epoch in range(epochs):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
@@ -179,7 +179,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         score = np.mean(in_range_socres)
         #generate_and_save_images(model, epochs, test_sample, file_path)
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if ((epochs + 1)%5 == 0) or (score > 6.7):
+        if (epoch + 1)%5 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epochs + 1,
                                                         ckpt_save_path))
@@ -271,10 +271,10 @@ if __name__ == '__main__':
     if cls_manager.latest_checkpoint:
         cls.restore(cls_manager.latest_checkpoint)
         print('classifier checkpoint restored!!')
-    for i in range(10, 0, -1):
-        epochs = 0
-        model = CVAE(latent_dim=latent_dim, beta=3)
-        sample_size = i * 100
+    for i in range(1,5):
+        epochs = 30
+        model = CVAE(latent_dim=latent_dim, beta=i)
+        sample_size = 1000
         train_size = sample_size * 10
         train_images = divide_dataset(train_set, train_labels, sample_size)
         #train_size = 10000
@@ -285,9 +285,9 @@ if __name__ == '__main__':
                          .shuffle(train_size).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
-        date = '3_27/'
+        date = '4_1/'
         str_i = str(i)
-        file_path = 'sample_test' + str_i
+        file_path = 'beta_test/' + str_i
         start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
 
