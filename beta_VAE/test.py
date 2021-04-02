@@ -233,20 +233,20 @@ if __name__ == '__main__':
     batch_size = 32
     latent_dim = 64
     iteratons = 7000
-    for i in range(10, 0, -1):
-        train_size = i * 1000
+    for i in range(1,5):
+        train_size = 10000
         test_size = 2000
         test_size_end = train_size + test_size
         train_images = normalize(dataset[:train_size, :, :, :])
         test_images = normalize(dataset[200000: , :, :, :])
-        model = CVAE(latent_dim=latent_dim, beta=3, shape=[32,32,3])
+        model = CVAE(latent_dim=latent_dim, beta=i, shape=[32,32,3])
         batch_size = 32
         train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                             .shuffle(train_size).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                             .shuffle(test_size).batch(batch_size))
-        date = '3_27/'
+        date = '4_2/'
         str_i = str(i)
-        file_path = 'sample_test' + str_i
+        file_path = 'beta_test' + str_i
         start_train(iteratons, model, train_dataset, test_dataset, date, file_path)
 
