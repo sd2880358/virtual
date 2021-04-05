@@ -224,7 +224,7 @@ if __name__ == '__main__':
     test_size_end = train_size + test_size
     train_images = normalize(dataset[:train_size, :, :, :])
     test_images = normalize(dataset[train_size: , :, :, :])
-    model = CVAE(latent_dim=latent_dim, beta=20, shape=[32,32,3])
+    model = CVAE(latent_dim=latent_dim, beta=4, shape=[32,32,3])
     batch_size = 32
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                             .shuffle(train_size).batch(batch_size))

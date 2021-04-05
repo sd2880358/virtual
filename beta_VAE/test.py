@@ -160,7 +160,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         loss = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epoch, test_sample, file_path)
         #generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if (epoch + 1) % 5 == 0 :
+        if (epoch + 1) % 1 == 0 :
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     batch_size = 32
     latent_dim = 64
     epochs = 30
-    beta = [1,20]
+    beta = [1,4]
     inception_model = Inception_score()
     for i in beta:
         train_size = 200000
