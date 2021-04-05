@@ -134,7 +134,6 @@ def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
         ckpt.restore(ckpt_manager.latest_checkpoint)
     for test_batch in test_dataset.take(1):
         test_sample = test_batch[:1, :, :, :]
-        r_sample = rotate(test_sample, degree)
     #generate_and_save_images(model, 0, test_sample, file_path)
     #generate_and_save_images(model, 0, r_sample, "rotate_image")
     display.clear_output(wait=False)
@@ -154,13 +153,15 @@ def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
         loss = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epoch, test_sample, file_path)
         #generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if (epoch + 1)%5 == 0 :
+        if (epoch + 1)%5 ==0 :
             step = 0
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             for test_x in test_dataset:
+                d = np.radians(random.randint(30, 90))
+                r_x = rotate(test_x, d)
                 total_loss = compute_loss(model, test_x)
                 loss(total_loss)
             elbo = -loss.result()
