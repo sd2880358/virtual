@@ -244,6 +244,6 @@ if __name__ == '__main__':
                             .shuffle(test_size).batch(batch_size))
         date = '4_4/'
         str_i = str(i)
-        file_path = 'beta_' + i
+        file_path = 'beta_' + str_i
         start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
