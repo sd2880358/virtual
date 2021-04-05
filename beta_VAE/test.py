@@ -117,7 +117,7 @@ def generate_and_save_images(model, epoch, test_input, file_path):
 
 
 
-def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
+def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     @tf.function
     def train_step(model, x, optimizer):
         for degree in range(0, 100, 10):
@@ -151,20 +151,16 @@ def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
         table = pd.read_csv(file_dir + '/inception_score.csv')
         iteration = table.iteration.iloc[-1]
         print("the current iteration is {}".format(iteration))
-    epoch = 0
     step = 0
-    while (iteration < iteratons):
+    for epoch in range(epochs):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
             iteration += 1
-            step += 1
         loss = tf.keras.metrics.Mean()
-        epoch += 1
         #generate_and_save_images(model, epoch, test_sample, file_path)
         #generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if (step  >= 1000) :
-            step = 0
+        if (epoch + 1) % 5 == 0 :
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
@@ -231,22 +227,23 @@ if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     batch_size = 32
     latent_dim = 64
-    iteratons = 7000
+    epochs = 30
+    beta = [1,20]
     inception_model = Inception_score()
-    for i in range(10,9,-1):
-        train_size = i * 1000
+    for i in beta:
+        train_size = 200000
         test_size = 2000
         test_size_end = train_size + test_size
         train_images = normalize(dataset[:train_size, :, :, :])
         test_images = normalize(dataset[200000: , :, :, :])
-        model = CVAE(latent_dim=latent_dim, beta=1, shape=[32,32,3])
+        model = CVAE(latent_dim=latent_dim, beta=beta, shape=[32,32,3])
         batch_size = 32
         train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
-                            .shuffle(train_size).batch(batch_size))
+                            .shuffle(200000).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                             .shuffle(test_size).batch(batch_size))
         date = '4_4/'
         str_i = str(i)
-        file_path = 'beta_1'
-        start_train(iteratons, model, train_dataset, test_dataset, date, file_path)
+        file_path = 'beta_' + i
+        start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
