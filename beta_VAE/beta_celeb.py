@@ -229,13 +229,13 @@ if __name__ == '__main__':
     test_size_end = train_size + test_size
     train_images = normalize(dataset[:train_size, :, :, :])
     test_images = normalize(dataset[200000: , :, :, :])
-    model = CVAE(latent_dim=latent_dim, beta=4, shape=[32,32,3])
+    model = CVAE(latent_dim=latent_dim, beta=250, shape=[32,32,3])
     batch_size = 32
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                             .shuffle(train_size).batch(batch_size))
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                             .shuffle(test_size).batch(batch_size))
-    date = '4_2/'
+    date = '4_4/'
     file_path = 'normal_beta_celeb'
     start_train(iteratons, model, train_dataset, test_dataset, date, file_path)
 
