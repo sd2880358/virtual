@@ -152,15 +152,19 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         iteration = table.iteration.iloc[-1]
         print("the current iteration is {}".format(iteration))
     step = 0
-    for epoch in range(epochs):
+    epoch = 0
+    while iteration<iterations:
+        epoch += 1
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
             iteration += 1
+            step += 1
         loss = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epoch, test_sample, file_path)
         #generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if (epoch + 1) % 1 == 0 :
+        if step >= 10000:
+            step = 0
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
@@ -227,23 +231,22 @@ if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     batch_size = 32
     latent_dim = 64
-    epochs = 30
-    beta = [1,4]
+    iterations = 100000
     inception_model = Inception_score()
-    for i in beta:
-        train_size = 200000
+    for i in range(10,0,-1):
+        train_size = i*1000
         test_size = 2000
         test_size_end = train_size + test_size
         train_images = normalize(dataset[:train_size, :, :, :])
         test_images = normalize(dataset[200000: , :, :, :])
-        model = CVAE(latent_dim=latent_dim, beta=i, shape=[32,32,3])
+        model = CVAE(latent_dim=latent_dim, beta=4, shape=[32,32,3])
         batch_size = 32
         train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                             .shuffle(200000).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                             .shuffle(test_size).batch(batch_size))
-        date = '4_4/'
+        date = '4_5/'
         str_i = str(i)
-        file_path = 'beta_' + str_i
-        start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+        file_path = 'sample_size' + str_i
+        start_train(iterations, model, train_dataset, test_dataset, date, file_path)
 
