@@ -132,8 +132,6 @@ def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
-        print('Latest checkpoint restored!!')
-    degree = np.radians(random.randint(30, 90))
     for test_batch in test_dataset.take(1):
         test_sample = test_batch[:1, :, :, :]
         r_sample = rotate(test_sample, degree)
@@ -146,27 +144,23 @@ def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
         table = pd.read_csv(file_dir + '/inception_score.csv')
         iteration = table.iteration.iloc[-1]
         print("the current iteration is {}".format(iteration))
-    epoch = 0
     step = 0
-    while (iteration < iteratons):
+    for epoch in range (epochs):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
             iteration += 1
             step += 1
         loss = tf.keras.metrics.Mean()
-        epoch += 1
         #generate_and_save_images(model, epoch, test_sample, file_path)
         #generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if (step  >= 1000) :
+        if (epoch + 1)%5 == 0 :
             step = 0
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             for test_x in test_dataset:
-                d = np.radians(random.randint(30, 90))
-                r_x = rotate(test_x, d)
                 total_loss = compute_loss(model, test_x)
                 loss(total_loss)
             elbo = -loss.result()
@@ -223,7 +217,7 @@ if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     batch_size = 32
     latent_dim = 64
-    iteratons = 7000
+    epochs = 40
     train_size = 200000
     test_size = 10000
     test_size_end = train_size + test_size
@@ -237,5 +231,5 @@ if __name__ == '__main__':
                             .shuffle(test_size).batch(batch_size))
     date = '4_4/'
     file_path = 'normal_beta_celeb'
-    start_train(iteratons, model, train_dataset, test_dataset, date, file_path)
+    start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
