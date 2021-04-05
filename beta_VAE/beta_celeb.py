@@ -93,7 +93,7 @@ def compute_loss(model, x):
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     logpz = log_normal_pdf(z, 0., 0.)
     logqz_x = log_normal_pdf(z, mean, logvar)
-    return -tf.reduce_mean(logx_z + beta * ( - logqz_x))
+    return -tf.reduce_mean(logx_z + beta * (logpz - logqz_x))
 
 
 
@@ -224,12 +224,12 @@ if __name__ == '__main__':
     batch_size = 32
     latent_dim = 64
     iteratons = 7000
-    train_size = 10000
-    test_size = 2000
+    train_size = 200000
+    test_size = 10000
     test_size_end = train_size + test_size
     train_images = normalize(dataset[:train_size, :, :, :])
-    test_images = normalize(dataset[200000: , :, :, :])
-    model = CVAE(latent_dim=latent_dim, beta=250, shape=[32,32,3])
+    test_images = normalize(dataset[train_size: , :, :, :])
+    model = CVAE(latent_dim=latent_dim, beta=20, shape=[32,32,3])
     batch_size = 32
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                             .shuffle(train_size).batch(batch_size))
