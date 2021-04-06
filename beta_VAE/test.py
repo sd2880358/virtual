@@ -231,7 +231,7 @@ if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     batch_size = 32
     latent_dim = 64
-    iterations = 200000
+    iterations = 100000
     inception_model = Inception_score()
     for i in range(2, 12, 2):
         train_size = i*1000
