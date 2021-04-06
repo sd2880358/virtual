@@ -233,9 +233,9 @@ if __name__ == '__main__':
     latent_dim = 64
     iterations = 200000
     inception_model = Inception_score()
-    for i in range(0,1):
-        train_size = 200000
-        test_size = 2000
+    for i in range(2, 12, 2):
+        train_size = i*1000
+        test_size = 10000
         test_size_end = train_size + test_size
         train_images = normalize(dataset[:train_size, :, :, :])
         test_images = normalize(dataset[200000: , :, :, :])
