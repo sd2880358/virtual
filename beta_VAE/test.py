@@ -245,8 +245,8 @@ if __name__ == '__main__':
                             .shuffle(200000).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                             .shuffle(test_size).batch(batch_size))
-        date = '4_4/'
+        date = '4_6/'
         str_i = str(i)
-        file_path = "beta_1"
+        file_path = "sample_size" + str_i
         start_train(iterations, model, train_dataset, test_dataset, date, file_path)
 
