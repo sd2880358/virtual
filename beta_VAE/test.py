@@ -117,7 +117,7 @@ def generate_and_save_images(model, epoch, test_input, file_path):
 
 
 
-def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
+def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
     @tf.function
     def train_step(model, x, optimizer):
         for degree in range(0, 100, 10):
@@ -231,10 +231,10 @@ if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     batch_size = 32
     latent_dim = 64
-    iterations = 70000
+    iterations = 200000
     inception_model = Inception_score()
     for i in range(0,1):
-        train_size = 10000
+        train_size = 200000
         test_size = 2000
         test_size_end = train_size + test_size
         train_images = normalize(dataset[:train_size, :, :, :])
