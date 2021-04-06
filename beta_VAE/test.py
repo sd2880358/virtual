@@ -231,22 +231,22 @@ if __name__ == '__main__':
     dataset = load_celeba("../CelebA/")
     batch_size = 32
     latent_dim = 64
-    iterations = 100000
+    iterations = 10000
     inception_model = Inception_score()
-    for i in range(10,0,-1):
-        train_size = i*1000
+    for i in range(0,1):
+        train_size = 10000
         test_size = 2000
         test_size_end = train_size + test_size
         train_images = normalize(dataset[:train_size, :, :, :])
         test_images = normalize(dataset[200000: , :, :, :])
-        model = CVAE(latent_dim=latent_dim, beta=4, shape=[32,32,3])
+        model = CVAE(latent_dim=latent_dim, beta=1, shape=[32,32,3])
         batch_size = 32
         train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                             .shuffle(200000).batch(batch_size))
         test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                             .shuffle(test_size).batch(batch_size))
-        date = '4_5/'
+        date = '4_4/'
         str_i = str(i)
-        file_path = 'sample_size' + str_i
+        file_path = "beta_1"
         start_train(iterations, model, train_dataset, test_dataset, date, file_path)
 
