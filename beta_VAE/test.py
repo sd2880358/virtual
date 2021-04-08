@@ -201,20 +201,14 @@ def compute_inception_score(model, d):
 
 def compute_and_save_inception_score(model, filePath, iteration):
     start_time = time.time()
-    best_fid = inception_model.compute_score(test_images, test_images)
-    base_line_fid = compute_inception_score(model, 0)
-    tmp = []
+    score_list = {}
+    score_list['base_line_fid'] = compute_inception_score(model, 0)
     for i in range(0, 100, 10):
         degree = np.radians((i))
         fid = compute_inception_score(model,  degree)
-        tmp.append(fid)
-    in_range_fid = np.mean(tmp)
-    df = pd.DataFrame({
-            'iteration':iteration,
-            "best_fid": best_fid,
-            "base_line_fid": base_line_fid,
-            "in_range_fid":in_range_fid,
-        }, index=[1])
+        score_list[i] = fid
+    score_list['iteration'] = iteration
+    df = pd.DataFrame(score_list, index=[1])
     file_dir = "./score/" + date + filePath
     if not os.path.exists(file_dir):
         os.makedirs(file_dir)
