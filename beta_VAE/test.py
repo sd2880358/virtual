@@ -163,7 +163,7 @@ def start_train(iterations, model, train_dataset, test_dataset, date, filePath):
         loss = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epoch, test_sample, file_path)
         #generate_and_save_images(model, epoch, r_sample, "rotate_image")
-        if step >= 1000:
+        if step >= 1000 or iteration >= iterations:
             step = 0
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
