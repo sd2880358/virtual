@@ -36,8 +36,9 @@ class Generator(tf.keras.Model):
   def decode(self, z, apply_sigmoid=False):
     logits = self.decoder(z)
     if apply_sigmoid:
-      probs = tf.sigmoid(logits)
-      return probs
+        pre = logits/127.5 + 0.5
+        probs = tf.sigmoid(pre)
+        return probs
     return logits
 
 class Discriminator(tf.keras.Model):
