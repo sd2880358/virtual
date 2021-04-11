@@ -49,9 +49,8 @@ def generate_and_save_images(model, epoch, test_input, test_label, file_path):
 
 def sample(size, latent_dim, true_label):
     z = tfd.Uniform(low=-1.0, high=1.0).sample([size, latent_dim-1])
-    print(true_label[0])
     p_labels = np.array([1 if true_label[j]==0 else 0 for j in range((true_label.shape[0]))])
-    p_labels = p_labels.reshape(true_label.shape[0], 1)
+    p_labels = tf.cast(p_labels.reshape(true_label.shape[0], 1), tf.float32)
     noise = tf.concat([z, p_labels], axis=-1)
     return noise, p_labels
 
