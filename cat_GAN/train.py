@@ -83,9 +83,8 @@ def start_train(epochs, generator, discriminator,
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
-    degree = np.radians(random.randint(30, 90))
     for test_batch, label_batch in tf.data.Dataset.zip((test_dataset.take(1),
-                                                       test_labels.take(1))git ):
+                                                       test_labels.take(1))):
         test_sample = test_batch[:1, :, :, :]
         test_label = label_batch[0]
     generate_and_save_images(generator, 0, test_sample, test_label, file_path)
