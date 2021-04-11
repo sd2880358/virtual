@@ -34,15 +34,11 @@ class CelebA():
                 self.attributes = self.attributes.drop(feature, axis=1)
                 self.num_features -= 1
 
-        self.attributes.set_index('image_id', inplace=True)
         self.attributes.replace(to_replace=-1, value=0, inplace=True)
-        self.attributes['image_id'] = list(self.attributes.index)
-
         self.features_name = list(self.attributes.columns)[:-1]
 
         # load ideal partitioning:
         self.partition = pd.read_csv(self.partition_path)
-        self.partition.set_index('image_id', inplace=True)
 
     def split(self, name='training', drop_zero=False):
         '''Returns the ['training', 'validation', 'test'] split of the dataset'''
@@ -57,9 +53,8 @@ class CelebA():
             raise ValueError('CelebA.split() => `name` must be one of [training, validation, test]')
 
         partition = self.partition.drop(index=to_drop.index)
-
         # join attributes with selected partition:
-        joint = partition.join(self.attributes, how='inner').drop('partition', axis=1)
+        joint = partition.join(self.attributes, how='inner', lsuffix='left').drop('partition', axis=1)
 
         if drop_zero is True:
             # select rows with all zeros values
