@@ -127,7 +127,7 @@ if __name__ == '__main__':
     batch_size = 32
     latent_dim = 64
     generator = Generator()
-    discriminator = Discriminator(shape=100)
+    discriminator = Discriminator(shape=[32,32,3])
     train_images = normalize(dataset[train_split.index])
     test_images = normalize(dataset[valid_split.index])
     train_attr = train_split.Eyeglasses.to_numpy()
