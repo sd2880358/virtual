@@ -49,9 +49,7 @@ def generate_and_save_images(model, epoch, test_input, test_label, file_path):
 
 def sample(size, latent_dim, true_label):
     z = tfd.Uniform(low=-1.0, high=1.0).sample([size, latent_dim-1])
-    p_labels = [1 if j==0 else 0 for j in true_label]
-
-
+    p_labels = [1 if j==0 else 0 for j in true_label.numpy()]
     noise = tf.concat([z, p_labels], axis=-1)
 
     return noise, p_labels
@@ -87,7 +85,7 @@ def start_train(epochs, generator, discriminator,
         print('Latest checkpoint restored!!')
     degree = np.radians(random.randint(30, 90))
     for test_batch, label_batch in tf.data.Dataset.zip((test_dataset.take(1),
-                                                       test_labels.take(1))):
+                                                       test_labels.take(1))git ):
         test_sample = test_batch[:1, :, :, :]
         test_label = label_batch[0]
     generate_and_save_images(generator, 0, test_sample, test_label, file_path)
