@@ -33,7 +33,7 @@ def generate_and_save_images(model, epoch, test_input, test_label, file_path):
     noise, n_lables = sample(1, generator.latent_dim, test_label)
     prediction = model.decode(noise)
     fig = plt.figure(figsize=(12, 12))
-    display_list = [test_input[0]+1, prediction[0]+1]
+    display_list = [test_input[0]*0.5+0.5, prediction[0]*0.5+0.5]
     title = ['Input Image', 'Predicted Image']
     for i in range(2):
         plt.subplot(1, 2, i + 1)
