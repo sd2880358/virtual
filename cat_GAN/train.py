@@ -64,7 +64,7 @@ def start_train(epochs, generator, discriminator,
 
     def train_step(generator, discriminator, train_data,
                    train_label, gen_optimizer, disc_optimizer):
-        noise, n_lables = sample(batch_size, generator.latent_dim, train_label)
+        noise, n_lables = sample(train_data.shape[0], generator.latent_dim, train_label)
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             fake_image = generator.decode(noise)
             fake_output, fake_cat = discriminator.result(fake_image)
