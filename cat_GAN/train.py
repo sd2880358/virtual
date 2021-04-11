@@ -50,7 +50,7 @@ def generate_and_save_images(model, epoch, test_input, test_label, file_path):
 def sample(size, latent_dim, true_label):
     z = tfd.Uniform(low=-1.0, high=1.0).sample([size, latent_dim-1])
     label = true_label.numpy()
-    p_labels = [1 if label[j]==0 else 0 for j in range(len(label)-1)]
+    p_labels = [1 if label[j]==0 else 0 for j in range((label.size)-1)]
     noise = tf.concat([z, p_labels], axis=-1)
 
     return noise, p_labels
