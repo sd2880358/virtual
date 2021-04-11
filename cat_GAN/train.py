@@ -31,7 +31,7 @@ def discriminator_loss(pred_x, act_x, pred_l, real_l):
 
 def generate_and_save_images(model, epoch, test_input, test_label, file_path):
     noise, n_lables = sample(1, generator.latent_dim, test_label)
-    prediction = model.decode(noise)
+    prediction = model.sample(noise)
     fig = plt.figure(figsize=(12, 12))
     display_list = [test_input[0]*0.5+0.5, prediction[0]*0.5+0.5]
     title = ['Input Image', 'Predicted Image']
