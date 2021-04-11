@@ -11,7 +11,11 @@ class Generator(tf.keras.Model):
         [
             tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
             tf.keras.layers.Dense(8*8*256, activation=tf.nn.relu),
-            tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
+            tf.keras.layers.Reshape(target_shape=(8, 8, 256)),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.LeakyReLU(),
+            tf.keras.layers.Conv2DTranspose(
+                filters=128, kernel_size=3, strides=1, padding='same'),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
@@ -19,9 +23,7 @@ class Generator(tf.keras.Model):
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
-                filters=32, kernel_size=3, strides=2, padding='same'),
-            tf.keras.layers.Conv2DTranspose(
-                filters=self.output_s, kernel_size=3, strides=1, padding='same'),
+                filters=3, kernel_size=3, strides=1, padding='same'),
         ]
     )
 
