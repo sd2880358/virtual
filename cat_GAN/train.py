@@ -29,12 +29,11 @@ def discriminator_loss(pred_x, act_x, pred_l, real_l):
     return image_loss_r + image_loss_p + label_loss
 
 
-def generate_and_save_images(model, epoch, test_input, file_path):
-    mean, logvar = model.encode(test_input)
-    z = model.reparameterize(mean, logvar)
-    predictions = model.sample(z)
+def generate_and_save_images(model, epoch, test_input, test_label, file_path):
+    noise, n_lables = sample(1, generator.latent_dim, test_label)
+    prediction = model.decode(noise)
     fig = plt.figure(figsize=(12, 12))
-    display_list = [test_input[0], predictions[0]]
+    display_list = [test_input[0]+1, prediction[0]+1]
     title = ['Input Image', 'Predicted Image']
     for i in range(2):
         plt.subplot(1, 2, i + 1)
@@ -87,19 +86,18 @@ def start_train(epochs, generator, discriminator,
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
     degree = np.radians(random.randint(30, 90))
-    for test_batch in test_dataset.take(1):
+    for test_batch, label_batch in tf.data.Dataset.zip(test_dataset.take(1),
+                                                       test_labels.take(1)):
         test_sample = test_batch[:1, :, :, :]
-        r_sample = rotate(test_sample, degree)
+        test_label = label_batch[0]
     generate_and_save_images(generator, 0, test_sample, file_path)
-    generate_and_save_images(generator, 0, r_sample, "rotate_image")
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
         for train_x, train_y in tf.data.Dataset.zip((train_dataset, train_labels)):
             train_step(generator, discriminator, train_x, train_y)
-        loss = tf.keras.metrics.Mean()
-        #generate_and_save_images(model, epoch, test_sample, file_path)
-        #generate_and_save_images(model, epoch, r_sample, "rotate_image")
+        generate_and_save_images(generator, epoch, test_sample, file_path)
+        generate_and_save_images(model, epoch, r_sample, "rotate_image")
         if (epoch + 1) % 5 == 0:
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
