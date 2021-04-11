@@ -30,7 +30,6 @@ def discriminator_loss(pred_x, act_x, pred_l, real_l):
 
 
 def generate_and_save_images(model, epoch, test_input, test_label, file_path):
-    print(test_label.shape)
     noise, n_lables = sample(1, generator.latent_dim, test_label)
     prediction = model.decode(noise)
     fig = plt.figure(figsize=(12, 12))
@@ -51,9 +50,9 @@ def generate_and_save_images(model, epoch, test_input, test_label, file_path):
 def sample(size, latent_dim, true_label):
     z = tfd.Uniform(low=-1.0, high=1.0).sample([size, latent_dim-1])
     label = true_label.numpy()
-    p_labels = [1 if label[j]==0 else 0 for j in range((label.size)-1)]
+    p_labels = np.array([1 if label[j]==0 else 0 for j in range((label.size))])
+    p_labels = p_labels.reshape(label.size, 1)
     noise = tf.concat([z, p_labels], axis=-1)
-
     return noise, p_labels
 
 
