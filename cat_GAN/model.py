@@ -15,7 +15,7 @@ class Generator(tf.keras.Model):
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
-                filters=128, kernel_size=3, strides=1, padding='same'),
+                filters=128, kernel_size=3, strides=2, padding='same'),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
