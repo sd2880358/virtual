@@ -27,7 +27,7 @@ def discriminator_loss(pred_x, act_x, pred_l, real_l):
     image_loss_p = cross_entropy(tf.zeros_like(pred_x), pred_x)
     print(pred_l)
     print(real_l)
-    label_loss = cross_entropy(pred_l, real_l)
+    label_loss = cross_entropy(pred_l, real_l.reshape())
     return image_loss_r + image_loss_p + label_loss
 
 
@@ -127,8 +127,8 @@ if __name__ == '__main__':
     discriminator = Discriminator(shape=[32,32,3])
     train_images = normalize(dataset[train_split.index])
     test_images = normalize(dataset[valid_split.index])
-    train_attr = train_split.Eyeglasses.to_numpy()
-    test_attr = valid_split.Eyeglasses.to_numpy()
+    train_attr = train_split.Eyeglasses.to_numpy().reshape(len(train_split), 1)
+    test_attr = valid_split.Eyeglasses.to_numpy().reshape(len(train_split), 1)
     batch_size = 32
     epochs = 1
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
