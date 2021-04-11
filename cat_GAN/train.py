@@ -1,6 +1,6 @@
 import tensorflow as tf
 from model import Generator, Discriminator
-from dataset import load_celebA
+from dataset import load_celeba
 from tensorflow_addons.image import rotate
 import random
 import time
