@@ -87,7 +87,7 @@ def start_train(epochs, generator, discriminator,
     for test_batch, label_batch in tf.data.Dataset.zip((test_dataset.take(1),
                                                        test_labels.take(1))):
         test_sample = test_batch[:1, :, :, :]
-        test_label = label_batch[0]
+        test_label = label_batch[:1]
     generate_and_save_images(generator, 0, test_sample, test_label, file_path)
     display.clear_output(wait=False)
     for epoch in range(epochs):
