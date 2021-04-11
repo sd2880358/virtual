@@ -126,7 +126,7 @@ if __name__ == '__main__':
     train_images = normalize(dataset[train_split.index])
     test_images = normalize(dataset[valid_split.index])
     train_attr = train_split.Eyeglasses.to_numpy().reshape(len(train_split), 1)
-    test_attr = valid_split.Eyeglasses.to_numpy().reshape(len(train_split), 1)
+    test_attr = valid_split.Eyeglasses.to_numpy().reshape(len(valid_split), 1)
     batch_size = 32
     epochs = 1
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
