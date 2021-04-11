@@ -25,7 +25,6 @@ def generator_loss(pred_x, pred_c, fake_c):
 def discriminator_loss(pred_x, act_x, pred_l, real_l):
     image_loss_r = cross_entropy(tf.ones_like(act_x), act_x)
     image_loss_p = cross_entropy(tf.zeros_like(pred_x), pred_x)
-    print()
     label_loss = cross_entropy(real_l, pred_l)
     return image_loss_r + image_loss_p + label_loss
 
