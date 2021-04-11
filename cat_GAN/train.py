@@ -61,7 +61,7 @@ def start_train(epochs, generator, discriminator,
                 train_dataset, train_labels,
                 test_dataset, test_labels,
                 date, filePath):
-    @tf.function
+
     def train_step(generator, discriminator, train_data,
                    train_label, gen_optimizer, disc_optimizer):
         noise, n_lables = sample(batch_size, generator.latent_dim, train_label)
