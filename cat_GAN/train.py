@@ -93,7 +93,7 @@ def start_train(epochs, generator, discriminator,
     for epoch in range(epochs):
         start_time = time.time()
         for train_x, train_y in tf.data.Dataset.zip((train_dataset, train_labels)):
-            train_step(generator, discriminator, train_x, train_y)
+            train_step(generator, discriminator, train_x, train_y, gen_optimizer, disc_optimizer)
         generate_and_save_images(generator, epoch, test_sample, test_label, file_path)
         if (epoch + 1) % 5 == 0:
             end_time = time.time()
