@@ -31,7 +31,7 @@ def discriminator_loss(pred_x, act_x, pred_l, real_l):
 
 def generate_and_save_images(model, epoch, test_input, test_label, file_path):
     noise, n_lables = sample(1, generator.latent_dim, test_label)
-    prediction = model.sample(noise)
+    prediction = model.decode(noise)
     fig = plt.figure(figsize=(12, 12))
     display_list = [test_input[0]*0.5+0.5, prediction[0]*0.5+0.5]
     title = ['Input Image', 'Predicted Image']
@@ -138,8 +138,8 @@ if __name__ == '__main__':
                         .shuffle(len(valid_split),seed=2).batch(batch_size))
     test_labels = (tf.data.Dataset.from_tensor_slices(test_attr)
                         .shuffle(len(valid_split), seed=2).batch(batch_size))
-    date = '4_11/'
-    file_path = "cat_test1"
+    date = '4_12/'
+    file_path = "cat_test2"
     start_train(epochs, generator, discriminator,
                 gen_optimizer, disc_optimizer,
                 train_dataset, train_labels,
