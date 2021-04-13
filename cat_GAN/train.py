@@ -19,7 +19,7 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 def generator_loss(pred_x, pred_c, fake_c):
     image_loss = cross_entropy(tf.ones_like(pred_x), pred_x)
     cat_loss = cross_entropy(fake_c, pred_c)
-    return image_loss + cat_loss
+    return image_loss
 
 
 def discriminator_loss(pred_x, act_x, pred_l, real_l):
@@ -138,7 +138,7 @@ if __name__ == '__main__':
                         .shuffle(len(valid_split),seed=2).batch(batch_size))
     test_labels = (tf.data.Dataset.from_tensor_slices(test_attr)
                         .shuffle(len(valid_split), seed=2).batch(batch_size))
-    date = '4_12/'
+    date = '4_13/'
     file_path = "cat_test2"
     start_train(epochs, generator, discriminator,
                 gen_optimizer, disc_optimizer,
