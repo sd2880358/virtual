@@ -27,8 +27,8 @@ def discriminator_loss(pred_x, act_x):
     return image_loss_r + image_loss_p
 
 
-def generate_and_save_images(model, epoch, test_input, test_label, file_path):
-    noise, n_lables = sample(1, generator.latent_dim, test_label)
+def generate_and_save_images(model, epoch, test_input, file_path):
+    noise, n_lables = sample(1, generator.latent_dim)
     prediction = model.decode(noise)
     fig = plt.figure(figsize=(12, 12))
     display_list = [test_input[0]*0.5+0.5, prediction[0]*0.5+0.5]
@@ -45,14 +45,9 @@ def generate_and_save_images(model, epoch, test_input, test_label, file_path):
     plt.close()
 
 
-def sample(size, latent_dim, true_label):
-    z = tfd.Uniform(low=-1.0, high=1.0).sample([size, latent_dim-1])
-    p_labels = np.array([1 if true_label[j]==0 else 0 for j in range((true_label.shape[0]))])
-    p_labels = p_labels.reshape(true_label.shape[0], 1)
-    test = tf.cast(p_labels, tf.float32)
-    noise = tf.concat([z, test], axis=-1)
-    return noise, p_labels
-
+def sample(size, latent_dim):
+    z = tfd.Uniform(low=-1.0, high=1.0).sample([size, latent_dim])
+    return z
 
 def start_train(epochs, generator, discriminator,
                 gen_optimizer, disc_optimizer,
@@ -87,13 +82,13 @@ def start_train(epochs, generator, discriminator,
                                                        test_labels.take(1))):
         test_sample = test_batch[:1, :, :, :]
         test_label = label_batch[:1]
-    generate_and_save_images(generator, 0, test_sample, test_label, file_path)
+    generate_and_save_images(generator, 0, test_sample, file_path)
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
         for train_x, train_y in tf.data.Dataset.zip((train_dataset, train_labels)):
             train_step(generator, discriminator, train_x, train_y, gen_optimizer, disc_optimizer)
-        generate_and_save_images(generator, epoch, test_sample, test_label, file_path)
+        generate_and_save_images(generator, epoch, test_sample, file_path)
         if (epoch + 1) % 5 == 0:
             end_time = time.time()
             ckpt_save_path = ckpt_manager.save()
