@@ -56,12 +56,12 @@ class Discriminator(tf.keras.Model):
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dense(64, activation='relu'),
                 # No activation
-                tf.keras.layers.Dense(2, activation='softmax'),
+                tf.keras.layers.Dense(1, activation='softmax'),
             ]
         )
 
     @tf.function
     def result(self, x):
-        mix_result = self.model(x)
-        cat, fidelity = tf.split(mix_result, num_or_size_splits=2, axis=1)
-        return cat, fidelity
+        result = self.model(x)
+
+        return result

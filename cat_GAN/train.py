@@ -16,17 +16,15 @@ from tensorflow_probability import distributions as tfd
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 
-def generator_loss(pred_x, pred_c, fake_c):
+def generator_loss(pred_x):
     image_loss = cross_entropy(tf.ones_like(pred_x), pred_x)
-    cat_loss = cross_entropy(fake_c, pred_c)
     return image_loss
 
 
-def discriminator_loss(pred_x, act_x, pred_l, real_l):
+def discriminator_loss(pred_x, act_x):
     image_loss_r = cross_entropy(tf.ones_like(act_x), act_x)
     image_loss_p = cross_entropy(tf.zeros_like(pred_x), pred_x)
-    label_loss = cross_entropy(real_l, pred_l)
-    return image_loss_r + image_loss_p + label_loss
+    return image_loss_r + image_loss_p
 
 
 def generate_and_save_images(model, epoch, test_input, test_label, file_path):
@@ -61,16 +59,17 @@ def start_train(epochs, generator, discriminator,
                 train_dataset, train_labels,
                 test_dataset, test_labels,
                 date, filePath):
-
+    
+    @tf.functions
     def train_step(generator, discriminator, train_data,
                    train_label, gen_optimizer, disc_optimizer):
         noise, n_lables = sample(train_data.shape[0], generator.latent_dim, train_label)
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             fake_image = generator.decode(noise)
-            fake_output, fake_cat = discriminator.result(fake_image)
-            true_output, true_cat = discriminator.result(train_data)
-            gen_loss = generator_loss(fake_output, fake_cat, n_lables)
-            disc_loss = discriminator_loss(fake_output, true_output, true_cat, train_label)
+            fake_output  = discriminator.result(fake_image)
+            true_output = discriminator.result(train_data)
+            gen_loss = generator_loss(fake_output, n_lables)
+            disc_loss = discriminator_loss(fake_output, true_output, train_label)
         gen_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
         disc_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
         gen_optimizer.apply_gradients(zip(gen_gradients, generator.trainable_variables))
@@ -138,7 +137,7 @@ if __name__ == '__main__':
                         .shuffle(len(valid_split),seed=2).batch(batch_size))
     test_labels = (tf.data.Dataset.from_tensor_slices(test_attr)
                         .shuffle(len(valid_split), seed=2).batch(batch_size))
-    date = '4_13/'
+    date = '4_23/'
     file_path = "cat_test2"
     start_train(epochs, generator, discriminator,
                 gen_optimizer, disc_optimizer,
