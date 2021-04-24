@@ -28,7 +28,7 @@ def discriminator_loss(pred_x, act_x):
 
 
 def generate_and_save_images(model, epoch, test_input, file_path):
-    noise, n_lables = sample(1, generator.latent_dim)
+    noise= sample(1, generator.latent_dim)
     prediction = model.decode(noise)
     fig = plt.figure(figsize=(12, 12))
     display_list = [test_input[0]*0.5+0.5, prediction[0]*0.5+0.5]
@@ -58,13 +58,13 @@ def start_train(epochs, generator, discriminator,
     @tf.function
     def train_step(generator, discriminator, train_data,
                    train_label, gen_optimizer, disc_optimizer):
-        noise, n_lables = sample(train_data.shape[0], generator.latent_dim, train_label)
+        noise = sample(train_data.shape[0], generator.latent_dim)
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             fake_image = generator.decode(noise)
             fake_output  = discriminator.result(fake_image)
             true_output = discriminator.result(train_data)
-            gen_loss = generator_loss(fake_output, n_lables)
-            disc_loss = discriminator_loss(fake_output, true_output, train_label)
+            gen_loss = generator_loss(fake_output)
+            disc_loss = discriminator_loss(fake_output, true_output)
         gen_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
         disc_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
         gen_optimizer.apply_gradients(zip(gen_gradients, generator.trainable_variables))
