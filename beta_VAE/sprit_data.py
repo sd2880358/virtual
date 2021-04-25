@@ -38,8 +38,7 @@ def rotate_vector(vector, matrix):
     return test
 
 
-def ori_cross_loss(model, x, d):
-    r_x = rotate(x, d)
+def ori_cross_loss(model, x, d, r_x):
     mean, logvar = model.encode(r_x)
     r_z = model.reparameterize(mean, logvar)
     c, s = np.cos(d), np.sin(d)
@@ -56,7 +55,7 @@ def ori_cross_loss(model, x, d):
     return -tf.reduce_mean(logx_z)
 
 
-def rota_cross_loss(model, x, d):
+def rota_cross_loss(model, x, d, r_x):
     r_x = rotate(x, d)
     c, s = np.cos(d), np.sin(d)
     latent = model.latent_dim
@@ -117,15 +116,12 @@ def start_train(epochs, model, train_dataset, date, filePath):
     def train_step(model, x, optimizer, start, end):
         for degree in range(40):
             with tf.GradientTape() as tape:
-                r_x_id = latents_classes[latents_classes.orientation==degree].index[start:end]
-                r_x = imgs[r_x_id]
-                r_x = (tf.data.Dataset.from_tensor_slices(r_x)
-                                 .batch(32))
                 d = np.radians((degree + 1)*6)
+                r_x = rotate(x, d)
                 ori_loss = compute_loss(model, x)
                 rota_loss = reconstruction_loss(model, r_x)
-                ori_cross_l = ori_cross_loss(model, x, d)
-                rota_cross_l = rota_cross_loss(model, x, d)
+                ori_cross_l = ori_cross_loss(model, x, d, r_x)
+                rota_cross_l = rota_cross_loss(model, x, d, r_x)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
