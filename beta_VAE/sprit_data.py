@@ -163,8 +163,8 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             for test_x in test_dataset:
                 d = np.radians(random.randint(30, 90))
                 r_x = rotate(test_x, d)
-                total_loss = rota_cross_loss(model, test_x, d) \
-                             + ori_cross_loss(model, test_x, d) \
+                total_loss = rota_cross_loss(model, test_x, d, r_x) \
+                             + ori_cross_loss(model, test_x, d, r_x) \
                              + compute_loss(model, test_x) \
                              + reconstruction_loss(model, r_x)
                 loss(total_loss)
