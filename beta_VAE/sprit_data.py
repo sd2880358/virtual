@@ -188,7 +188,7 @@ def calculate_fid(real, fake):
 
 
 if __name__ == '__main__':
-    dataset_zip = np.load('dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
+    dataset_zip = np.load('../dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
 
     print('Keys in the dataset:', dataset_zip.keys())
     imgs = dataset_zip['imgs']
