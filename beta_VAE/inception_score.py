@@ -1,4 +1,4 @@
-import tensorflow as tf
+import tensorflow as t
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.applications.inception_v3 import preprocess_input
 from math import floor
