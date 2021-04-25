@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
     print('Keys in the dataset:', dataset_zip.keys())
     imgs = dataset_zip['imgs']
-    imgs = np.reshape(imgs, [len(imgs), 64, 64, 1])
+    imgs = np.reshape(imgs, [len(imgs), 64, 64, 1]).astype('float32')
     latents_values = dataset_zip['latents_values']
     latents_classes = dataset_zip['latents_classes']
     latents_classes = pd.DataFrame(latents_classes)
