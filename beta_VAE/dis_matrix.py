@@ -41,6 +41,7 @@ def split_label(model, data, labels, split=200):
         for j in range(l):
             label_idx = labels[labels[label_set[i]] == j].index
             train_set = data[label_idx]
+            train_set = np.random.shuffle(train_set)
             subgroups = math.ceil(train_set.shape[0]/split)
             for batch in range(subgroups):
                 start = batch*split
