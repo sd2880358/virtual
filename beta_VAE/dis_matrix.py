@@ -15,7 +15,7 @@ def make_classifier():
     model = tf.keras.Sequential()
     model.add(layers.Dense(50, activation='relu'))
     model.add(layers.Dense(50, activation='relu'))
-    model.add(layers.Dense(5, activation='relu'))
+    model.add(layers.Dense(3, activation='relu'))
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   optimizer=tf.keras.optimizers.Adam(0.01),
                   metrics=['accuracy'])
@@ -33,7 +33,7 @@ def find_diff(model, x_1, x_2):
     return diff
 
 def split_label(model, data, labels, split=200):
-    label_set = ["shape", "scale", "orientation", "x_axis", "y_axis"]
+    label_set = ["orientation", "x_axis", "y_axis"]
     tmp = []
     features = []
     for i in range(len(label_set)):
