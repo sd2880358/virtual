@@ -49,8 +49,7 @@ def split_label(model, data, labels, split=200):
                 x_2 = subset[s:]
                 diff = find_diff(model, x_1, x_2)
                 tmp.append([diff, i])
-    data_list = np.array(tmp)
-    return data_list
+    return tmp
 
 
 if __name__ == '__main__':
@@ -66,23 +65,14 @@ if __name__ == '__main__':
     latents_classes = pd.DataFrame(latents_classes)
     latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
     dataset = split_label(model, imgs, latents_classes)
-    dataset = np.random.shuffle(dataset)
-    train_size = math.ceil(dataset.shape[0] * 0.8)
-    train_set = dataset[:train_size]
-    test_set = dataset[train_size:]
-    train_feature = train_set[: ,0]
-    train_labels = train_set[:, 1]
-    test_feature = test_set[:, 0]
-    test_labels = test_set[:, 1]
+    train_features = dataset[:][0]
+    train_labels = dataset[:][1]
     classifer = make_classifier()
     history = classifer.fit(
-        train_feature, train_labels,
-        validation_data=(test_feature, test_labels),
-        epochs=100, verbose=0)
+        train_features, train_labels,
+        validation_split=0.2,
+        epochs=100, verbose=1)
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
     test_results = {}
-    test_results['signal'] = classifer.evaluate(
-        test_feature,
-        test_labels, verbose=0)
     hist.to_csv("./score/dis_matrix")
