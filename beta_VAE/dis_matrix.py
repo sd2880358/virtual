@@ -65,8 +65,9 @@ if __name__ == '__main__':
     latents_classes = pd.DataFrame(latents_classes)
     latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
     dataset = split_label(model, imgs, latents_classes)
-    train_features = dataset[:][0]
-    train_labels = dataset[:][1]
+    dataset = np.array(dataset)
+    train_features = dataset[:, 0]
+    train_labels = dataset[:, 1]
     classifer = make_classifier()
     history = classifer.fit(
         train_features, train_labels,
