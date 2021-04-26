@@ -52,8 +52,8 @@ def split_label(model, data, labels, split=200):
                 features.append(diff)
                 tmp.append(i)
     features = np.array(features, dtype="float32")
-    labels = np.array(labels, dtype='int')
-    return features, labels
+    tmp = np.array(tmp, dtype='int')
+    return features, tmp
 
 
 if __name__ == '__main__':
