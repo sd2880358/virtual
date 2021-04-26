@@ -13,7 +13,8 @@ from model import CVAE
 
 def make_classifier():
     model = tf.keras.Sequential()
-    model.add(layers.Dense(36, activation='relu'))
+    model.add(layers.Dense(50, activation='relu'))
+    model.add(layers.Dense(50, activation='relu'))
     model.add(layers.Dense(5, activation='relu'))
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   optimizer=tf.keras.optimizers.Adam(0.01),
