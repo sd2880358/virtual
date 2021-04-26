@@ -56,7 +56,7 @@ def split_label(model, data, labels, split=200):
 if __name__ == '__main__':
     model = CVAE(latent_dim=8, beta=4, shape=[64, 64, 1])
     checkpoint = tf.train.Checkpoint(model=model)
-    checkpoint.restore("beta_VAE/checkpoints/4_25/beta_test/ckpt-31")
+    checkpoint.restore("checkpoints/4_25/beta_test/ckpt-31")
     dataset_zip = np.load('../dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
 
     imgs = dataset_zip['imgs']
