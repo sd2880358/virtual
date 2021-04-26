@@ -34,6 +34,7 @@ def find_diff(model, x_1, x_2):
 def split_label(model, data, labels, split=200):
     label_set = ["shape", "scale", "orientation", "x_axis", "y_axis"]
     tmp = []
+    features = []
     for i in range(len(label_set)):
         l = len(labels.groupby(label_set[i]).count())
         for j in range(l):
@@ -48,8 +49,11 @@ def split_label(model, data, labels, split=200):
                 x_1 = subset[:s]
                 x_2 = subset[s:]
                 diff = find_diff(model, x_1, x_2)
-                tmp.append([diff, i])
-    return tmp
+                features.append(diff)
+                tmp.append(i)
+    features = np.array(features, dtype="float32")
+    labels = np.array(labels, dtype='int')
+    return features, labels
 
 
 if __name__ == '__main__':
@@ -64,10 +68,9 @@ if __name__ == '__main__':
     latents_classes = dataset_zip['latents_classes']
     latents_classes = pd.DataFrame(latents_classes)
     latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
-    dataset = split_label(model, imgs, latents_classes)
-    dataset = np.array(dataset)
-    train_features = dataset[:, 0]
-    train_labels = dataset[:, 1]
+    features, labels = split_label(model, imgs, latents_classes)
+    train_features = features
+    train_labels = labels
     classifer = make_classifier()
     history = classifer.fit(
         train_features, train_labels,
