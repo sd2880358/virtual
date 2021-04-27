@@ -56,7 +56,7 @@ def split_label(model, data, labels, split=100):
         l = len(labels.groupby(label_set[i]).count())
         for j in range(l):
             label = labels[labels[label_set[i]] == j]
-            label_idx = label_idx
+            label_idx = label.index
             train_set = data[label_idx]
             subgroups = math.ceil(train_set.shape[0]/split)
             for batch in range(subgroups):
