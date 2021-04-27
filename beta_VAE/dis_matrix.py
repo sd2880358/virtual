@@ -64,7 +64,7 @@ def split_label(model, data, labels, split=100):
                 x_1 = train_set[start:end]
                 x_1_labels = label[start:end]
                 x_2_index = selection(x_1_labels, labels, label_set, label_set[i], j)
-                x_2 = data[x_2_index]
+                x_2 = data[x_2_index].reshape[split, 64, 64, 1]
                 diff = find_diff(model, x_1, x_2)
                 features.append(diff)
                 tmp.append(i)
