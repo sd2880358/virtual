@@ -40,8 +40,7 @@ def selection(data_labels, labels, label_list, label_name, v_k):
         data = data_labels.iloc[i, :]
         sample = pre_fixed.loc[((pre_fixed[label_list[0]] != data[label_list[0]]) &
                         (pre_fixed[label_list[1]] != data[label_list[1]]) &
-                        (pre_fixed[label_list[2]] != data[label_list[2]]) &
-                        (pre_fixed[label_list[3]] != data[label_list[3]]))
+                        (pre_fixed[label_list[2]] != data[label_list[2]]))
         ].sample(n=1)
         idx_list.append(sample.index)
     return idx_list
