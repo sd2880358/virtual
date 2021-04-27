@@ -32,24 +32,40 @@ def find_diff(model, x_1, x_2):
     diff = np.mean(np.abs(z_1 - z_2), axis=0)
     return diff
 
-def split_label(model, data, labels, split=200):
-    label_set = ["orientation", "x_axis", "y_axis"]
+def selection(data_labels, labels, label_list, label_name, v_k):
+    pre_fixed = labels[labels[label_name] == v_k]
+    idx_list = []
+    label_list = [i for i in label_list if i != label_name]
+    for i in range(len(data_labels)):
+        data = data_labels.iloc[i, :]
+        sample = pre_fixed.loc[((pre_fixed[label_list[0]] != data[label_list[0]]) &
+                        (pre_fixed[label_list[1]] != data[label_list[1]]) &
+                        (pre_fixed[label_list[2]] != data[label_list[2]]) &
+                        (pre_fixed[label_list[3]] != data[label_list[3]]))
+        ].sample(n=1)
+        idx_list.append(sample.index)
+    return idx_list
+
+
+
+def split_label(model, data, labels, split=100):
+    label_set = ["scale", "orientation", "x_axis", "y_axis"]
     tmp = []
     features = []
     for i in range(len(label_set)):
         l = len(labels.groupby(label_set[i]).count())
         for j in range(l):
-            label_idx = labels[labels[label_set[i]] == j].index
+            label = labels[labels[label_set[i]] == j]
+            label_idx = label_idx
             train_set = data[label_idx]
-            np.random.shuffle(train_set)
             subgroups = math.ceil(train_set.shape[0]/split)
             for batch in range(subgroups):
                 start = batch*split
                 end = (batch+1)*split
-                subset = train_set[start:end]
-                s = int(len(subset)/2)
-                x_1 = subset[:s]
-                x_2 = subset[s:]
+                x_1 = train_set[start:end]
+                x_1_labels = label[start:end]
+                x_2_index = selection(x_1_labels, labels, label_set, label_set[i], j)
+                x_2 = data[x_2_index]
                 diff = find_diff(model, x_1, x_2)
                 features.append(diff)
                 tmp.append(i)
