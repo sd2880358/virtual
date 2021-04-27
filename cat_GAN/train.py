@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(len(valid_split),seed=2).batch(batch_size))
-    date = '4_23/'
+    date = '4_27/'
     file_path = "cat_test2"
     start_train(epochs, generator, discriminator,
                 gen_optimizer, disc_optimizer,
