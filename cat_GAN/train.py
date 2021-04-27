@@ -51,13 +51,13 @@ def sample(size, latent_dim):
 
 def start_train(epochs, generator, discriminator,
                 gen_optimizer, disc_optimizer,
-                train_dataset, train_labels,
-                test_dataset, test_labels,
+                train_dataset,
+                test_dataset,
                 date, filePath):
     
     @tf.function
     def train_step(generator, discriminator, train_data,
-                   train_label, gen_optimizer, disc_optimizer):
+                    gen_optimizer, disc_optimizer):
         noise = sample(train_data.shape[0], generator.latent_dim)
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             fake_image = generator.decode(noise)
@@ -78,16 +78,14 @@ def start_train(epochs, generator, discriminator,
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
-    for test_batch, label_batch in tf.data.Dataset.zip((test_dataset.take(1),
-                                                       test_labels.take(1))):
+    for test_batch in test_dataset.take(1):
         test_sample = test_batch[:1, :, :, :]
-        test_label = label_batch[:1]
     generate_and_save_images(generator, 0, test_sample, file_path)
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
-        for train_x, train_y in tf.data.Dataset.zip((train_dataset, train_labels)):
-            train_step(generator, discriminator, train_x, train_y, gen_optimizer, disc_optimizer)
+        for train_x in train_dataset:
+            train_step(generator, discriminator, train_x, gen_optimizer, disc_optimizer)
         generate_and_save_images(generator, epoch, test_sample, file_path)
         if (epoch + 1) % 5 == 0:
             end_time = time.time()
@@ -125,18 +123,14 @@ if __name__ == '__main__':
     epochs = 100
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                         .shuffle(len(train_split), seed=1).batch(batch_size))
-    train_labels = (tf.data.Dataset.from_tensor_slices(train_attr)
-                        .shuffle(len(train_split), seed=1).batch(batch_size))
 
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(len(valid_split),seed=2).batch(batch_size))
-    test_labels = (tf.data.Dataset.from_tensor_slices(test_attr)
-                        .shuffle(len(valid_split), seed=2).batch(batch_size))
     date = '4_23/'
     file_path = "cat_test2"
     start_train(epochs, generator, discriminator,
                 gen_optimizer, disc_optimizer,
-                train_dataset, train_labels,
-                test_dataset, test_labels,
+                train_dataset,
+                test_dataset,
                 date, file_path)
 

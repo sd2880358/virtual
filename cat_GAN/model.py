@@ -15,24 +15,19 @@ class Generator(tf.keras.Model):
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
-                filters=128, kernel_size=3, strides=2, padding='same'),
+                filters=128, kernel_size=3, strides=2, padding='same', use_bias=False),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
-                filters=64, kernel_size=3, strides=2, padding='same'),
+                filters=64, kernel_size=3, strides=2, padding='same', use_bias=False),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.LeakyReLU(),
             tf.keras.layers.Conv2DTranspose(
-                filters=3, kernel_size=3, strides=1, padding='same'),
+                filters=3, kernel_size=3, strides=1, padding='same', use_bias=False, activation="tanh"),
         ]
     )
 
   @tf.function
-  def sample(self, eps=None):
-    if eps is None:
-      eps = tf.random.normal(shape=(100, self.latent_dim))
-    return self.decode(eps, apply_sigmoid=True)
-
   def decode(self, z, apply_sigmoid=False):
     logits = self.decoder(z)
     if apply_sigmoid:
@@ -56,7 +51,7 @@ class Discriminator(tf.keras.Model):
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dense(64, activation='relu'),
                 # No activation
-                tf.keras.layers.Dense(1, activation='softmax'),
+                tf.keras.layers.Dense(1),
             ]
         )
 
