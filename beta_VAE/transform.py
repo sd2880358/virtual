@@ -206,7 +206,7 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    sample_mnist = mnist_images[np.where(mnist_labels==1)][9]
+    sample_mnist = mnist_images[np.where(mnist_labels==9)][0]
     sample_mnist = [resize(sample_mnist, (64, 64, 1))]
 
     latent_dim = 8
