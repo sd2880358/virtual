@@ -206,7 +206,7 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    sample_mnist = mnist_images[np.where(mnist_labels==1)][0]
+    sample_mnist = mnist_images[np.where(mnist_labels==1)][9]
     sample_mnist = [resize(sample_mnist, (64, 64, 1))]
 
     latent_dim = 8
@@ -225,7 +225,7 @@ if __name__ == '__main__':
                      .batch(batch_size))
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                     .batch(batch_size))
-    date = '5_3/'
+    date = '5_4/'
     file_path = 'beta_test'
     start_train(epochs, model, train_dataset, sample_mnist, test_dataset, date, file_path)
 
