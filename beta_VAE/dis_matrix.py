@@ -15,7 +15,7 @@ def make_classifier():
     model = tf.keras.Sequential()
     model.add(layers.Dense(50, activation='relu'))
     model.add(layers.Dense(50, activation='relu'))
-    model.add(layers.Dense(3, activation='relu'))
+    model.add(layers.Dense(4, activation='relu'))
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   optimizer=tf.keras.optimizers.Adam(0.01),
                   metrics=['accuracy'])
@@ -57,7 +57,7 @@ def split_label(model, data, labels, split=100):
             label = labels[labels[label_set[i]] == j]
             label_idx = label.index
             train_set = data[label_idx]
-            subgroups = math.ceil(train_set.shape[0]/split)
+            subgroups = 1
             for batch in range(subgroups):
                 start = batch*split
                 end = (batch+1)*split

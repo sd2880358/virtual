@@ -2,7 +2,6 @@ import tensorflow as tf
 from model import CVAE, Classifier
 from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
-import random
 import time
 from tensorflow.linalg import matvec
 import matplotlib.pyplot as plt
@@ -154,7 +153,7 @@ def start_train(epochs, model, train_dataset, sample_mnist, test_dataset, date, 
         loss = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         # generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if (epoch + 1) % 10 == 0:
+        if (epoch + 1) % 100 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                                 ckpt_save_path))
@@ -167,7 +166,7 @@ def start_train(epochs, model, train_dataset, sample_mnist, test_dataset, date, 
             elbo = -loss.result()
             generate_and_save_images(model, epoch, test_sample, file_path)
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epoch, elbo, end_time - start_time))
+                  .format(epoch+1, elbo, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
@@ -208,7 +207,7 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
 
     sample_mnist = mnist_images[np.where(mnist_labels==1)][0]
-    sample_mnist = resize(sample_mnist, (1, 64, 64, 1))
+    sample_mnist = [resize(sample_mnist, (64, 64, 1))]
 
     latent_dim = 8
     num_examples_to_generate = 16
