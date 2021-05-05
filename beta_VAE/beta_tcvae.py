@@ -35,7 +35,7 @@ def compute_loss(model, x):
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    logx_z = tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     # indenpendence term
     # KL(q(z)||prod_j q(z_j)) = log q(z) - sum_j log q(z_j)
     log_qz, logq_z_product = estimate_entropies(z, mean, logvar)
