@@ -48,7 +48,8 @@ def estimate_entropies(qz_samples, mean, logvar):
         tf.expand_dims(qz_samples,1),  tf.expand_dims(mean,0),
     tf.expand_dims(logvar, 0))
     log_q_z_product = tf.math.reduce_sum(
-        tf.math.reduce_logsumexp(log_q_z_prob, axis=1, keepdims=False)
+        tf.math.reduce_logsumexp(log_q_z_prob, axis=1, keepdims=False),
+        axis=1, keepdims=False
     )
 
     log_qz = tf.math.reduce_logsumexp(
@@ -95,7 +96,6 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     generate_and_save_images(model, 0, test_sample, file_path)
     display.clear_output(wait=False)
-    iteration = 0
     for epoch in range(epochs):
         start_time = time.time()
         for train_x in train_dataset:
@@ -112,7 +112,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epochs, elbo, end_time - start_time))
+                  .format(epoch+1, elbo, end_time - start_time))
 
 
     #compute_and_save_inception_score(model, file_path)
