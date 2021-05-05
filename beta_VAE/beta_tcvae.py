@@ -20,7 +20,7 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 def kl_divergence(mean, logvar):
     summand = tf.math.square(mean) + tf.math.exp(logvar) - logvar  - 1
-    return tf.reduce_mean(0.5 * tf.reduce_sum(summand, [1]))
+    return (0.5 * tf.reduce_sum(summand, [1])
 
 def compute_loss(model, x):
     beta = model.beta
@@ -28,19 +28,19 @@ def compute_loss(model, x):
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1, 2, 3]))
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     log_qz, logq_z_product = estimate_entropies(z, mean, logvar)
     tc = tf.reduce_mean(log_qz - logq_z_product)
     kl_loss = kl_divergence(mean, logvar)
 
-    return logx_z + kl_loss + (1-beta) * tc
+    return -tf.reduced_mean(logx_z - kl_loss - (beta-1) * tc)
 
 def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
     normalization = tf.math.log(2. * pi)
     inv_sigma = tf.math.exp(-logvar)
-    tmp = (samples - mean) ** 2
-    return -0.5 * (tmp * inv_sigma + logvar + normalization)
+    tmp = (samples - mean) * inv_sigma
+    return -0.5 * (tmp * tmp + logvar + normalization)
 
 
 def estimate_entropies(qz_samples, mean, logvar):
