@@ -20,7 +20,7 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 def kl_divergence(mean, logvar):
     summand = tf.math.sqrt(mean) + tf.math.exp(logvar) - logvar  - 1
-    return tf.reduce_mean(0.5 * tf.reduce_sum(summand, axis=1))
+    return tf.reduce_mean(0.5 * tf.reduce_sum(summand, [1]))
 
 def compute_loss(model, x):
     beta = model.beta
