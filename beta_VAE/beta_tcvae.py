@@ -30,10 +30,10 @@ def compute_loss(model, x):
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
     log_qz, logq_z_product = estimate_entropies(z, mean, logvar)
-    tc = tf.reduce_mean(log_qz - logq_z_product)
+    tc = log_qz - logq_z_product
     kl_loss = kl_divergence(mean, logvar)
 
-    return -tf.reduce_mean(logx_z - kl_loss - (beta-1) * tc)
+    return -tf.reduce_mean(logx_z + kl_loss + (beta-1) * tc)
 
 def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
@@ -100,7 +100,6 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
-            iteration += 1
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
         generate_and_save_images(model, epochs, test_sample, file_path)
