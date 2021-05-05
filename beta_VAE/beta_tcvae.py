@@ -103,7 +103,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
         generate_and_save_images(model, epoch, test_sample, file_path)
-        if (epoch + 1)%1 == 0:
+        if (epoch + 1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -180,10 +180,8 @@ if __name__ == '__main__':
     random_vector_for_generation = tf.random.normal(
         shape=[num_examples_to_generate, latent_dim])
     model = CVAE(latent_dim=latent_dim, beta=6)
-    sample_size = 1000
-    epochs = 30
+    epochs = 100
 
-    train_size = sample_size * 10
     batch_size = 32
 
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
