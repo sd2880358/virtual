@@ -20,7 +20,7 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 def kl_divergence(mean, logvar):
     summand = tf.math.square(mean) + tf.math.exp(logvar) - logvar  - 1
-    return (0.5 * tf.reduce_sum(summand, [1])
+    return (0.5 * tf.reduce_sum(summand, [1]))
 
 def compute_loss(model, x):
     beta = model.beta
@@ -33,7 +33,7 @@ def compute_loss(model, x):
     tc = tf.reduce_mean(log_qz - logq_z_product)
     kl_loss = kl_divergence(mean, logvar)
 
-    return -tf.reduced_mean(logx_z - kl_loss - (beta-1) * tc)
+    return -tf.reduce_mean(logx_z - kl_loss - (beta-1) * tc)
 
 def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
