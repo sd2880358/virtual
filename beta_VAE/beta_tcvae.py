@@ -35,20 +35,18 @@ def compute_loss(model, x):
     z = model.reparameterize(mean, logvar)
     x_logit = model.decode(z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = tf.reduce_sum(cross_ent, axis=[1, 2, 3])
-    # indenpendence term
-    # KL(q(z)||prod_j q(z_j)) = log q(z) - sum_j log q(z_j)
+    logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1, 2, 3]))
     log_qz, logq_z_product = estimate_entropies(z, mean, logvar)
-    tc = log_qz - logq_z_product
+    tc = tf.reduce_mean(log_qz - logq_z_product)
     kl_loss = kl_divergence(mean, logvar)
-    return tf.reduce_mean(logx_z + kl_loss + (beta-1) * tc)
+    return logx_z + kl_loss + (beta-1) * tc
 
 def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
     normalization = tf.math.log(2. * pi)
     inv_sigma = tf.math.exp(-logvar)
-    tmp = (samples - mean) * inv_sigma
-    return -0.5 * (tmp * tmp + 2 * logvar + normalization)
+    tmp = (samples - mean)
+    return -0.5 * (tmp * tmp * inv_sigma + logvar + normalization)
 
 
 def estimate_entropies(qz_samples, mean, logvar):
