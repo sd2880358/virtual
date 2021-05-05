@@ -109,29 +109,18 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             iteration += 1
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
-        epochs += 1
-        in_range_socres = []
-        mean, logvar = model.encode(test_images)
-        r_m = np.identity(model.latent_dim)
-        z = model.reparameterize(mean, logvar)
-        for i in range(0, 100, 10):
-            theta = np.radians(i)
-            scores = compute_mnist_score(model, classifier, z, theta, r_m)
-            in_range_socres.append(scores)
-        score = np.mean(in_range_socres)
         generate_and_save_images(model, epochs, test_sample, file_path)
         if (epoch + 1)%1 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            compute_and_save_mnist_score(model, classifier, iteration, file_path)
             for test_x in test_dataset:
                 total_loss = compute_loss(model, test_x)
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epochs, elbo, end_time - start_time))
-            print('The current score is {}', score)
+
 
     #compute_and_save_inception_score(model, file_path)
 
