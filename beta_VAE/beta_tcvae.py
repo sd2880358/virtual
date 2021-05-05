@@ -52,7 +52,9 @@ def gaussian_log_density(samples, mean, logvar):
 
 
 def estimate_entropies(qz_samples, mean, logvar):
-    log_q_z_prob = gaussian_log_density(qz_samples, mean, logvar)
+    log_q_z_prob = gaussian_log_density(
+        tf.expand_dims(qz_samples,1),  tf.expand_dims(mean,0),
+    tf.expand_dims(logvar, 0))
     log_q_z_product = tf.math.reduce_sum(
         tf.math.reduce_logsumexp(log_q_z_prob, axis=1, keepdims=False)
     )
