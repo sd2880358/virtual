@@ -199,7 +199,7 @@ if __name__ == '__main__':
                          .shuffle(len(train_images)).batch(batch_size))
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .shuffle(test_size).batch(batch_size))
-    date = '4_5/'
+    date = '5_5/'
     file_path = 'beta_tcvae/'
     start_train(epochs, model, train_dataset, test_dataset, date, file_path)
 
