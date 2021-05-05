@@ -102,7 +102,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             train_step(model, train_x, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
-        generate_and_save_images(model, epochs, test_sample, file_path)
+        generate_and_save_images(model, epoch, test_sample, file_path)
         if (epoch + 1)%1 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
