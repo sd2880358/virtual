@@ -16,13 +16,6 @@ optimizer = tf.keras.optimizers.Adam(1e-4)
 mbs = tf.losses.MeanAbsoluteError()
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
-def reconstruction_loss(model, X):
-    mean, logvar = model.encode(X)
-    Z = model.reparameterize(mean, logvar)
-    X_pred = model.decode(Z)
-    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=X_pred, labels=X)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
-    return -tf.reduce_mean(logx_z)
 
 
 def kl_divergence(mean, logvar):
@@ -39,7 +32,7 @@ def compute_loss(model, x):
     log_qz, logq_z_product = estimate_entropies(z, mean, logvar)
     tc = tf.reduce_mean(log_qz - logq_z_product)
     kl_loss = kl_divergence(mean, logvar)
-    return logx_z + kl_loss + (beta-1) * tc
+    return logx_z + kl_loss
 
 def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
