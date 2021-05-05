@@ -32,7 +32,7 @@ def compute_loss(model, x):
     log_qz, logq_z_product = estimate_entropies(z, mean, logvar)
     tc = tf.reduce_mean(log_qz - logq_z_product)
     kl_loss = kl_divergence(mean, logvar)
-    return logx_z
+    return kl_loss
 
 def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
