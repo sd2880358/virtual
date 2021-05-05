@@ -33,7 +33,7 @@ def compute_loss(model, x):
     tc = log_qz - logq_z_product
     kl_loss = kl_divergence(mean, logvar)
 
-    return tf.reduce_mean(logx_z + kl_loss + (1-beta) * tc)
+    return tf.reduce_mean(logx_z + kl_loss + (beta-1) * tc)
 
 def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
