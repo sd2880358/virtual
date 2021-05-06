@@ -139,7 +139,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         loss = tf.keras.metrics.Mean()
 
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if (epoch + 1)%1 == 0:
+        if (epoch + 1)%100 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -149,7 +149,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epoch, elbo, end_time - start_time))
+                  .format(epoch+1, elbo, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
