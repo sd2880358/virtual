@@ -194,7 +194,7 @@ if __name__ == '__main__':
     )
 
     test_images = imgs[shape_spade[20:]]
-
+    num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[64,64,1])
     epochs = 100
 
