@@ -38,8 +38,7 @@ def rotate_vector(vector, matrix):
     return test
 
 
-def ori_cross_loss(model, x, d):
-    r_x = rotate(x, d)
+def ori_cross_loss(model, x, d, r_x):
     mean, logvar = model.encode(r_x)
     r_z = model.reparameterize(mean, logvar)
     c, s = np.cos(d), np.sin(d)
@@ -56,8 +55,7 @@ def ori_cross_loss(model, x, d):
     return -tf.reduce_mean(logx_z)
 
 
-def rota_cross_loss(model, x, d):
-    r_x = rotate(x, d)
+def rota_cross_loss(model, x, d, r_x):
     c, s = np.cos(d), np.sin(d)
     latent = model.latent_dim
     r_m = np.identity(latent)
@@ -112,12 +110,18 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 
 
-def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
+def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, filePath):
     @tf.function
-    def train_step(model, x, optimizer):
-        with tf.GradientTape() as tape:
-            ori_loss = compute_loss(model, x)
-            total_loss = ori_loss
+    def train_step(model, x, train_rotation, optimizer):
+        for i in train_rotation.shape[0]:
+            d = np.radians(i*6)
+            with tf.GradientTape() as tape:
+                r_x = tf.cast(train_rotation[i, :, :, :], tf.float32)
+                ori_loss = compute_loss(model, x)
+                rota_loss = reconstruction_loss(model, r_x)
+                ori_cross_l = ori_cross_loss(model, x, d, r_x)
+                rota_cross_l = rota_cross_loss(model, x, d, r_x)
+                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
@@ -133,8 +137,8 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     generate_and_save_images(model, 0, test_sample, file_path)
     for epoch in range(epochs):
         start_time = time.time()
-        for train_x in train_dataset:
-            train_step(model, train_x, optimizer)
+        for train_x, train_rotation in tf.data.Dataset.zip(train_dataset, rotation_set):
+            train_step(model, train_x, train_rotation, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
@@ -177,21 +181,22 @@ if __name__ == '__main__':
                                         (latents_classes['scale'] == 3) &
                                         (latents_classes['x_axis'] == 15) &
                                         (latents_classes['y_axis'] == 15))].index
-    train_images = np.concatenate(
-        (imgs[images_index], imgs[shape_spade[:20]]), axis=0
-    )
+    rotation_set = [imgs[images_index[1:]]], [imgs[shape_spade[1:20]]]
 
+    train_images = np.concatenate(
+        (imgs[images_index[:1], imgs[shape_spade[:1]]]), axis=0
+    )
     test_images = imgs[shape_spade[20:]]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[64,64,1])
     epochs = 2000
 
-    batch_size = 8
+    batch_size = 1
 
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
-                         .shuffle(len(train_images)).batch(batch_size))
+                         .batch(batch_size))
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
-                        .shuffle(len(test_images)).batch(batch_size))
+                        .batch(batch_size))
     date = '5_6/'
-    file_path = 'beta_vae/'
-    start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+    file_path = 'beta_ori/'
+    start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, file_path)
