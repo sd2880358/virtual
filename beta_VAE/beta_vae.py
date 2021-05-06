@@ -137,7 +137,7 @@ def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, 
     generate_and_save_images(model, 0, test_sample, file_path)
     for epoch in range(epochs):
         start_time = time.time()
-        for train_x, train_rotation in zip((train_dataset, rotation_set)):
+        for train_x, train_rotation in zip(train_dataset, rotation_set):
             train_step(model, train_x, train_rotation, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
