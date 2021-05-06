@@ -236,36 +236,38 @@ def compute_and_save_mnist_score(model, classifier, epoch, filePath):
 
 if __name__ == '__main__':
     (train_set, train_labels), (test_dataset, test_labels) = tf.keras.datasets.mnist.load_data()
-    train_set = preprocess_images(train_set)
-    test_images = preprocess_images(test_dataset)
-    batch_size = 32
-    latent_dim = 8
+    dataset_zip = np.load('../dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
+
+    print('Keys in the dataset:', dataset_zip.keys())
+    imgs = dataset_zip['imgs']
+    imgs = np.reshape(imgs, [len(imgs), 64, 64, 1]).astype('float32')
+    latents_values = dataset_zip['latents_values']
+    latents_classes = dataset_zip['latents_classes']
+    latents_classes = pd.DataFrame(latents_classes)
+    latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
+    images_index = latents_classes.loc[((latents_classes['shape'] == 0) &
+                                        (latents_classes['scale'] == 3) &
+                                        (latents_classes['x_axis'] == 15) &
+                                        (latents_classes['y_axis'] == 15))].index
+    shape_spade = latents_classes.loc[((latents_classes['shape'] == 2) &
+                                        (latents_classes['scale'] == 3) &
+                                        (latents_classes['x_axis'] == 15) &
+                                        (latents_classes['y_axis'] == 15))].index
+    train_images = np.concatenate(
+        (imgs[images_index], imgs[shape_spade[:20]]), axis=0
+    )
+
+    test_images = imgs[shape_spade[20:]]
     num_examples_to_generate = 16
-    test_size = 10000
-    random_vector_for_generation = tf.random.normal(
-        shape=[num_examples_to_generate, latent_dim])
-    classifier = Classifier(shape=(28, 28, 1))
-    classifier_path = checkpoint_path = "./checkpoints/classifier"
-    cls = tf.train.Checkpoint(classifier = classifier)
-    cls_manager = tf.train.CheckpointManager(cls, classifier_path, max_to_keep=5)
-    if cls_manager.latest_checkpoint:
-        cls.restore(cls_manager.latest_checkpoint)
-        print('classifier checkpoint restored!!')
-    epochs = 30
-    model = CVAE(latent_dim=latent_dim, beta=4)
-    sample_size = 1000
-    train_size = sample_size * 10
-    train_images = divide_dataset(train_set, train_labels, sample_size)
-        #train_size = 10000
-        #train_images = train_set
-    batch_size = 32
+    model = CVAE(latent_dim=8, beta=6, shape=[64,64,1])
+    epochs = 2000
+
+    batch_size = 8
 
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
-                         .shuffle(train_size).batch(batch_size))
+                         .shuffle(len(train_images)).batch(batch_size))
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
-                        .shuffle(test_size).batch(batch_size))
-    date = '4_2/'
-    file_path = 'mnist_beta_vae/'
+                        .shuffle(len(test_images)).batch(batch_size))
+    date = '5_6/'
+    file_path = 'beta_vae/'
     start_train(epochs, model, train_dataset, test_dataset, date, file_path)
-
-
