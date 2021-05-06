@@ -116,7 +116,7 @@ def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, 
         for i in range(train_rotation.shape[0]):
             d = np.radians(i*6)
             with tf.GradientTape() as tape:
-                r_x = tf.cast(train_rotation[i, :, :, :], tf.float32)
+                r_x = tf.expand_dims(tf.cast(train_rotation[i, :, :, :], tf.float32), 0)
                 ori_loss = compute_loss(model, x)
                 rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, x, d, r_x)
