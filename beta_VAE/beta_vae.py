@@ -181,7 +181,7 @@ if __name__ == '__main__':
                                         (latents_classes['scale'] == 3) &
                                         (latents_classes['x_axis'] == 15) &
                                         (latents_classes['y_axis'] == 15))].index
-    rotation_set = [imgs[images_index[1:]]], [imgs[shape_spade[1:20]]]
+    rotation_set = [imgs[images_index[1:]], imgs[shape_spade[1:20]]]
 
     train_images = np.concatenate(
         (imgs[images_index[:1]], imgs[shape_spade[:1]]), axis=0
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     test_images = imgs[shape_spade[20:]]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[64,64,1])
-    epochs = 2000
+    epochs = 100
 
     batch_size = 1
 
