@@ -185,7 +185,7 @@ if __name__ == '__main__':
                                         (latents_classes['scale'] == 3) &
                                         (latents_classes['x_axis'] == 15) &
                                         (latents_classes['y_axis'] == 15))].index
-    shape_spade = latents_classes.loc[((latents_classes['shape'] == 0) &
+    shape_spade = latents_classes.loc[((latents_classes['shape'] == 2) &
                                         (latents_classes['scale'] == 3) &
                                         (latents_classes['x_axis'] == 15) &
                                         (latents_classes['y_axis'] == 15))].index
