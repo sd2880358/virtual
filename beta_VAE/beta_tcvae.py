@@ -39,8 +39,8 @@ def gaussian_log_density(samples, mean, logvar):
     pi = tf.constant(np.pi)
     normalization = tf.math.log(2. * pi)
     inv_sigma = tf.math.exp(-logvar)
-    tmp = (samples - mean) * inv_sigma
-    return -0.5 * (tmp * tmp + logvar + normalization)
+    tmp = (samples - mean)
+    return -0.5 * (tmp * tmp * inv_sigma + logvar + normalization)
 
 
 def estimate_entropies(qz_samples, mean, logvar):
