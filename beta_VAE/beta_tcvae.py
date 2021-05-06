@@ -103,8 +103,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             train_step(model, train_x, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
-        generate_and_save_images(model, epoch, test_sample, file_path)
-        if (epoch + 1)%10 == 0:
+        if (epoch + 1)%100 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -112,6 +111,7 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
                 total_loss = compute_loss(model, test_x)
                 loss(total_loss)
             elbo = -loss.result()
+            generate_and_save_images(model, epoch, test_sample, file_path)
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epoch+1, elbo, end_time - start_time))
 
@@ -196,9 +196,9 @@ if __name__ == '__main__':
     test_images = imgs[shape_spade[20:]]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[64,64,1])
-    epochs = 100
+    epochs = 2000
 
-    batch_size = 32
+    batch_size = 8
 
     train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                          .shuffle(len(train_images)).batch(batch_size))
