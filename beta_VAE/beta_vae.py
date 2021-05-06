@@ -184,7 +184,7 @@ if __name__ == '__main__':
     rotation_set = [imgs[images_index[1:]]], [imgs[shape_spade[1:20]]]
 
     train_images = np.concatenate(
-        (imgs[images_index[:1], imgs[shape_spade[:1]]]), axis=0
+        (imgs[images_index[:1]], imgs[shape_spade[:1]]), axis=0
     )
     test_images = imgs[shape_spade[20:]]
     num_examples_to_generate = 16
