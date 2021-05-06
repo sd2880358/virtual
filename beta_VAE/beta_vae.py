@@ -120,16 +120,6 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
             total_loss = ori_loss
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        '''
-        with tf.GradientTape() as tape:
-            r_x = rotate(x, d)
-            rota_loss = compute_loss(model, r_x)
-        gradients = tape.gradient(rota_loss, model.trainable_variables)  
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        with tf.GradientTape() as tape:
-        gradients = tape.gradient(total_loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        '''
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
                                optimizer=optimizer)
@@ -138,100 +128,34 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
     display.clear_output(wait=False)
-    in_range_socres = []
-    mean, logvar = model.encode(test_images)
-    r_m = np.identity(model.latent_dim)
-    z = model.reparameterize(mean, logvar)
-    for i in range(0, 100, 10):
-        theta = np.radians(i)
-        scores = compute_mnist_score(model, classifier, z, theta, r_m)
-        in_range_socres.append(scores)
-    score = np.mean(in_range_socres)
-    iteration = 0
+    for test_batch in test_dataset.take(1):
+        test_sample = test_batch[0:num_examples_to_generate, :, :, :]
+    generate_and_save_images(model, 0, test_sample, file_path)
     for epoch in range(epochs):
         start_time = time.time()
         for train_x in train_dataset:
             train_step(model, train_x, optimizer)
-            iteration += 1
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
-        epochs += 1
-        in_range_socres = []
-        mean, logvar = model.encode(test_images)
-        r_m = np.identity(model.latent_dim)
-        z = model.reparameterize(mean, logvar)
-        for i in range(0, 100, 10):
-            theta = np.radians(i)
-            scores = compute_mnist_score(model, classifier, z, theta, r_m)
-            in_range_socres.append(scores)
-        score = np.mean(in_range_socres)
-        #generate_and_save_images(model, epochs, test_sample, file_path)
+
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch + 1)%1 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            compute_and_save_mnist_score(model, classifier, iteration, file_path)
+            generate_and_save_images(model, epochs, test_sample, file_path)
             for test_x in test_dataset:
                 total_loss = compute_loss(model, test_x)
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epochs, elbo, end_time - start_time))
-            print('The current score is {}', score)
+                  .format(epoch, elbo, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
 
 
-def compute_mnist_score(model, classifier, z=0, d=0, r_m=0, initial=False):
-    if (initial==True):
-        mean, logvar = model.encode(test_images)
-        r_m = np.identity(model.latent_dim)
-        z = model.reparameterize(mean, logvar)
-        d = np.radians(random.randint(0, 90))
-    c, s = np.cos(d), np.sin(d)
-    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
-    rota_z = matvec(tf.cast(r_m, dtype=tf.float32), z)
-    phi_z = model.sample(rota_z)
-    #fid = calculate_fid(test_images, phi_z)
-    scores = classifier.mnist_score(phi_z)
-    return scores
 
-
-def calculate_fid(real, fake):
-    mu1, sigma1 = real.mean(axis=0), np.cov(real, rowvar=False)
-    mu2, sigma2 = fake.mean(axis=0), np.cov(fake, rowvar=False)
-    ssdiff = np.sum((mu1 - mu2) ** 2.0)
-    covmean = sqrtm(sigma1.dot(sigma2))
-    if np.iscomplexobj(covmean):
-        covmean = covmean.real
-    fid = ssdiff + np.trace(sigma1 + sigma2 - 2.0 * covmean)
-    return fid
-
-
-def compute_and_save_mnist_score(model, classifier, epoch, filePath):
-    in_range_socres = []
-    mean, logvar = model.encode(test_images)
-    r_m = np.identity(model.latent_dim)
-    z = model.reparameterize(mean, logvar)
-    fid_list = []
-    for i in range(0, 100, 10):
-        theta = np.radians(i)
-        scores = compute_mnist_score(model, classifier, z, theta, r_m)
-        in_range_socres.append(scores)
-    in_range_mean, in_range_locvar = np.mean(in_range_socres), np.std(in_range_socres)
-    df = pd.DataFrame({
-        "in_range_mean":in_range_mean,
-        "in_range_locvar": in_range_locvar,
-    }, index=[epoch+1])
-    file_dir = "./score/" + date + filePath
-    if not os.path.exists(file_dir):
-        os.makedirs(file_dir)
-    if not os.path.isfile(file_dir + '/filename.csv'):
-        df.to_csv(file_dir +'/filename.csv')
-    else:  # else it exists so append without writing the header
-        df.to_csv(file_dir + '/filename.csv', mode='a', header=False)
 
 
 if __name__ == '__main__':
