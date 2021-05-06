@@ -116,7 +116,7 @@ def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, 
         for i in train_rotation.shape[0]:
             d = np.radians(i*6)
             with tf.GradientTape() as tape:
-                r_x = train_rotation[i, :, :, :]
+                r_x = tf.cast(train_rotation[i, :, :, :], tf.float32)
                 ori_loss = compute_loss(model, x)
                 rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, x, d, r_x)
@@ -137,7 +137,7 @@ def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, 
     generate_and_save_images(model, 0, test_sample, file_path)
     for epoch in range(epochs):
         start_time = time.time()
-        for train_x, train_rotation in tf.data.Dataset.zip((train_dataset, rotation_set)):
+        for train_x, train_rotation in zip((train_dataset, rotation_set)):
             train_step(model, train_x, train_rotation, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
@@ -181,7 +181,7 @@ if __name__ == '__main__':
                                         (latents_classes['scale'] == 3) &
                                         (latents_classes['x_axis'] == 15) &
                                         (latents_classes['y_axis'] == 15))].index
-    rotation_set = tf.cast([imgs[images_index[1:]]], [imgs[shape_spade[1:20]]], tf.float32)
+    rotation_set = [imgs[images_index[1:]]], [imgs[shape_spade[1:20]]]
 
     train_images = np.concatenate(
         (imgs[images_index[:1]], imgs[shape_spade[:1]]), axis=0
