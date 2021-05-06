@@ -113,7 +113,7 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, filePath):
     @tf.function
     def train_step(model, x, train_rotation, optimizer):
-        for i in train_rotation.shape[0]:
+        for i in range(train_rotation.shape[0]):
             d = np.radians(i*6)
             with tf.GradientTape() as tape:
                 r_x = tf.cast(train_rotation[i, :, :, :], tf.float32)
