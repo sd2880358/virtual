@@ -197,6 +197,6 @@ if __name__ == '__main__':
                          .batch(batch_size))
     test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
                         .batch(batch_size))
-    date = '5_6/'
+    date = '5_8/'
     file_path = 'beta_ori/'
     start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, file_path)
