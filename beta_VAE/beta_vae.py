@@ -187,5 +187,5 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
     date = '5_8/'
-    file_path = 'mnist_test5/'
+    file_path = 'mnist_test6/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
