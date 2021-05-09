@@ -134,10 +134,9 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     generate_and_save_images(model, 0, test_sample, file_path)
     for epoch in range(epochs):
         start_time = time.time()
-        '''
+
         for train_x in full_range_set:
-            train_step(model, train_x, 360, optimizer)            
-        '''
+            train_step(model, train_x, 360, optimizer)
 
 
         for train_p in partial_range_set:
@@ -174,11 +173,11 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    full_range = mnist_images[np.where(mnist_labels == 3)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 4)][100:200]
+    full_range = mnist_images[np.where(mnist_labels == 7)][:100]
+    partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
-    epochs = 400
+    epochs = 800
 
     batch_size = 32
 
