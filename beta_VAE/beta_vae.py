@@ -177,7 +177,7 @@ if __name__ == '__main__':
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 400
 
-    batch_size = 1
+    batch_size = 32
 
     full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                          .batch(batch_size))
