@@ -11,7 +11,7 @@ class CVAE(tf.keras.Model):
     self.shape = shape
     self.output_f = int(shape[0]/4)
     self.output_s = shape[2]
-    if (self.model == "cnn"):
+    if (model == "cnn"):
         self.encoder = tf.keras.Sequential(
             [
             tf.keras.layers.InputLayer(input_shape=shape),
@@ -40,7 +40,7 @@ class CVAE(tf.keras.Model):
                     filters=self.output_s, kernel_size=3, strides=1, padding='same'),
             ]
         )
-    elif (self.model == "mlp"):
+    elif (model == "mlp"):
         self.encoder = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=shape),
