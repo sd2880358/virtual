@@ -47,8 +47,6 @@ def ori_cross_loss(model, x, d, r_x):
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, -s], [s, c]
     phi_z = rotate_vector(r_z, r_m)
     phi_x = model.decode(phi_z)
-
-
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
 
@@ -70,7 +68,6 @@ def rota_cross_loss(model, x, d, r_x):
 
     return -tf.reduce_mean(logx_z)
 
-    #logx_z = cross_entropy(phi_x, r_x)
 
 
 
@@ -110,13 +107,13 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 
 
-def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, filePath):
+def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
-    def train_step(model, x, train_rotation, optimizer):
-        for i in range(train_rotation.shape[0]):
-            d = np.radians(i*6)
+    def train_step(model, x, degree_set, optimizer):
+        for i in range(10, degree_set+10, 10):
+            d = np.radians(i)
             with tf.GradientTape() as tape:
-                r_x = tf.expand_dims(tf.cast(train_rotation[i, :, :, :], tf.float32), 0)
+                r_x = rotate(x, d)
                 ori_loss = compute_loss(model, x)
                 rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, x, d, r_x)
@@ -132,13 +129,15 @@ def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, 
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
     display.clear_output(wait=False)
-    for test_batch in test_dataset.take(1):
+    for test_batch in partial_range_set.take(1):
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     generate_and_save_images(model, 0, test_sample, file_path)
     for epoch in range(epochs):
         start_time = time.time()
-        for train_x, train_rotation in zip(train_dataset, rotation_set):
-            train_step(model, train_x, train_rotation, optimizer)
+        for train_x in full_range_set:
+            train_step(model, train_x, 360, optimizer)
+        for train_p in partial_range_set:
+            train_step(model, train_p, 180, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
@@ -148,7 +147,7 @@ def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, 
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             generate_and_save_images(model, epochs, test_sample, file_path)
-            for test_x in test_dataset:
+            for test_x in test_sample:
                 total_loss = compute_loss(model, test_x)
                 loss(total_loss)
             elbo = -loss.result()
@@ -163,40 +162,22 @@ def start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, 
 
 
 if __name__ == '__main__':
-    (train_set, train_labels), (test_dataset, test_labels) = tf.keras.datasets.mnist.load_data()
-    dataset_zip = np.load('../dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
+    (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
+    mnist_images = preprocess_images(mnist_images)
 
-    print('Keys in the dataset:', dataset_zip.keys())
-    imgs = dataset_zip['imgs']
-    imgs = np.reshape(imgs, [len(imgs), 64, 64, 1]).astype('float32')
-    latents_values = dataset_zip['latents_values']
-    latents_classes = dataset_zip['latents_classes']
-    latents_classes = pd.DataFrame(latents_classes)
-    latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
-    images_index = latents_classes.loc[((latents_classes['shape'] == 0) &
-                                        (latents_classes['scale'] == 3) &
-                                        (latents_classes['x_axis'] == 15) &
-                                        (latents_classes['y_axis'] == 15))].index
-    shape_spade = latents_classes.loc[((latents_classes['shape'] == 2) &
-                                        (latents_classes['scale'] == 3) &
-                                        (latents_classes['x_axis'] == 15) &
-                                        (latents_classes['y_axis'] == 15))].index
-    rotation_set = [imgs[images_index[1:]], imgs[shape_spade[1:20]]]
-
-    train_images = np.concatenate(
-        (imgs[images_index[:1]], imgs[shape_spade[:1]]), axis=0
-    )
-    test_images = imgs[shape_spade[20:]]
+    full_range = mnist_images[np.where(mnist_labels == 7)][:1]
+    partial_range = mnist_images[np.where(mnist_labels == 9)][:1]
     num_examples_to_generate = 16
-    model = CVAE(latent_dim=8, beta=6, shape=[64,64,1])
+    model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 1000
 
     batch_size = 1
 
-    train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
+    full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                          .batch(batch_size))
-    test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
-                        .batch(batch_size))
+    partial_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
+                         .batch(batch_size))
+
     date = '5_8/'
-    file_path = 'beta_ori/'
-    start_train(epochs, model, train_dataset, rotation_set, test_dataset, date, file_path)
+    file_path = 'mnist/'
+    start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
