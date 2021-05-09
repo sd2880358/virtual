@@ -139,16 +139,21 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         for train_p in partial_range_set:
             train_step(model, train_p, 180, optimizer)
         end_time = time.time()
-        loss = tf.keras.metrics.Mean()
-
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch + 1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             generate_and_save_images(model, epochs, test_sample, file_path)
-            for test_x in test_sample:
-                total_loss = compute_loss(model, test_x)
+            loss = tf.keras.metrics.Mean()
+            for i in range(10, 360, 10):
+                d = np.radians(i)
+                r_x = rotate(partial_range_set, d)
+                ori_loss = compute_loss(model, partial_range_set)
+                rota_loss = reconstruction_loss(model, partial_range_set)
+                ori_cross_l = ori_cross_loss(model, partial_range_set, d, r_x)
+                rota_cross_l = rota_cross_loss(model, partial_range_set, d, r_x)
+                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
             elbo = -loss.result()
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
