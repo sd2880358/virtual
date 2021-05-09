@@ -172,7 +172,7 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
 
     full_range = mnist_images[np.where(mnist_labels == 3)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
+    partial_range = mnist_images[np.where(mnist_labels == 4)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 400
@@ -185,5 +185,5 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
     date = '5_8/'
-    file_path = 'mnist_test4/'
+    file_path = 'mnist_test5/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
