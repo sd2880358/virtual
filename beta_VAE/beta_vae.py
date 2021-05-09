@@ -143,6 +143,8 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             train_step(model, train_p, 180, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
+
+
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch + 1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()

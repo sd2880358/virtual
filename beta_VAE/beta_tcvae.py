@@ -58,6 +58,51 @@ def estimate_entropies(qz_samples, mean, logvar):
     )
     return log_qz, log_q_z_product
 
+def rotate_vector(vector, matrix):
+    matrix = tf.cast(matrix, tf.float32)
+    test = matvec(matrix, vector)
+    return test
+
+
+def ori_cross_loss(model, x, d, r_x):
+    mean, logvar = model.encode(r_x)
+    r_z = model.reparameterize(mean, logvar)
+    c, s = np.cos(d), np.sin(d)
+    latent = model.latent_dim
+    r_m = np.identity(latent)
+    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, -s], [s, c]
+    phi_z = rotate_vector(r_z, r_m)
+    phi_x = model.decode(phi_z)
+    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+
+    return -tf.reduce_mean(logx_z)
+
+
+def rota_cross_loss(model, x, d, r_x):
+    c, s = np.cos(d), np.sin(d)
+    latent = model.latent_dim
+    r_m = np.identity(latent)
+    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
+    mean, logvar = model.encode(x)
+    z = model.reparameterize(mean, logvar)
+    phi_z = rotate_vector(z, r_m)
+    phi_x = model.decode(phi_z)
+
+    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+
+    return -tf.reduce_mean(logx_z)
+
+
+def reconstruction_loss(model, X):
+    mean, logvar = model.encode(X)
+    Z = model.reparameterize(mean, logvar)
+    X_pred = model.decode(Z)
+    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=X_pred, labels=X)
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+    return -tf.reduce_mean(logx_z)
+
 
 def generate_and_save_images(model, epoch, test_sample, file_path):
     mean, logvar = model.encode(test_sample)
@@ -78,14 +123,21 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 
 
-def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
+def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(model, x, optimizer):
-        with tf.GradientTape() as tape:
-            ori_loss = compute_loss(model, x)
-            total_loss = ori_loss
-        gradients = tape.gradient(total_loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        def train_step(model, x, degree_set, optimizer):
+            for i in range(10, degree_set + 10, 10):
+                d = np.radians(i)
+                with tf.GradientTape() as tape:
+                    r_x = rotate(x, d)
+                    ori_loss = compute_loss(model, x)
+                    rota_loss = reconstruction_loss(model, r_x)
+                    ori_cross_l = ori_cross_loss(model, x, d, r_x)
+                    rota_cross_l = rota_cross_loss(model, x, d, r_x)
+                    total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
+                gradients = tape.gradient(total_loss, model.trainable_variables)
+                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
                                optimizer=optimizer)
@@ -93,23 +145,36 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
-    for test_batch in test_dataset.take(1):
+    for test_batch in partial_range_set.take(1):
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     generate_and_save_images(model, 0, test_sample, file_path)
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
-        for train_x in train_dataset:
-            train_step(model, train_x, optimizer)
+
+        for train_x in full_range_set:
+            train_step(model, train_x, 360, optimizer)
+
+
+        for train_p in partial_range_set:
+            train_step(model, train_p, 180, optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
+
         if (epoch + 1)%100 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for test_x in test_dataset:
-                total_loss = compute_loss(model, test_x)
+            for i in range(10, 360, 10):
+                d = np.radians(i)
+                r_x = rotate(test_sample, d)
+                ori_loss = compute_loss(model, test_sample)
+                rota_loss = reconstruction_loss(model, test_sample)
+                ori_cross_l = ori_cross_loss(model, test_sample, d, r_x)
+                rota_cross_l = rota_cross_loss(model, test_sample, d, r_x)
+                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
+
             elbo = -loss.result()
             generate_and_save_images(model, epoch, test_sample, file_path)
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
@@ -120,19 +185,6 @@ def start_train(epochs, model, train_dataset, test_dataset, date, filePath):
 
 
 
-def compute_mnist_score(model, classifier, z=0, d=0, r_m=0, initial=False):
-    if (initial==True):
-        mean, logvar = model.encode(test_images)
-        r_m = np.identity(model.latent_dim)
-        z = model.reparameterize(mean, logvar)
-        d = np.radians(random.randint(0, 90))
-    c, s = np.cos(d), np.sin(d)
-    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
-    rota_z = matvec(tf.cast(r_m, dtype=tf.float32), z)
-    phi_z = model.sample(rota_z)
-    #fid = calculate_fid(test_images, phi_z)
-    scores = classifier.mnist_score(phi_z)
-    return scores
 
 
 def calculate_fid(real, fake):
@@ -146,66 +198,27 @@ def calculate_fid(real, fake):
     return fid
 
 
-def compute_and_save_mnist_score(model, classifier, epoch, filePath):
-    in_range_socres = []
-    mean, logvar = model.encode(test_images)
-    r_m = np.identity(model.latent_dim)
-    z = model.reparameterize(mean, logvar)
-    fid_list = []
-    for i in range(0, 100, 10):
-        theta = np.radians(i)
-        scores = compute_mnist_score(model, classifier, z, theta, r_m)
-        in_range_socres.append(scores)
-    in_range_mean, in_range_locvar = np.mean(in_range_socres), np.std(in_range_socres)
-    df = pd.DataFrame({
-        "in_range_mean":in_range_mean,
-        "in_range_locvar": in_range_locvar,
-    }, index=[epoch+1])
-    file_dir = "./score/" + date + filePath
-    if not os.path.exists(file_dir):
-        os.makedirs(file_dir)
-    if not os.path.isfile(file_dir + '/filename.csv'):
-        df.to_csv(file_dir +'/filename.csv')
-    else:  # else it exists so append without writing the header
-        df.to_csv(file_dir + '/filename.csv', mode='a', header=False)
 
 
 if __name__ == '__main__':
-    (train_set, train_labels), (test_dataset, test_labels) = tf.keras.datasets.mnist.load_data()
-    dataset_zip = np.load('../dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
+    (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
+    mnist_images = preprocess_images(mnist_images)
 
-    print('Keys in the dataset:', dataset_zip.keys())
-    imgs = dataset_zip['imgs']
-    imgs = np.reshape(imgs, [len(imgs), 64, 64, 1]).astype('float32')
-    latents_values = dataset_zip['latents_values']
-    latents_classes = dataset_zip['latents_classes']
-    latents_classes = pd.DataFrame(latents_classes)
-    latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
-    images_index = latents_classes.loc[((latents_classes['shape'] == 0) &
-                                        (latents_classes['scale'] == 3) &
-                                        (latents_classes['x_axis'] == 15) &
-                                        (latents_classes['y_axis'] == 15))].index
-    shape_spade = latents_classes.loc[((latents_classes['shape'] == 2) &
-                                        (latents_classes['scale'] == 3) &
-                                        (latents_classes['x_axis'] == 15) &
-                                        (latents_classes['y_axis'] == 15))].index
-    train_images = np.concatenate(
-        (imgs[images_index], imgs[shape_spade[:20]]), axis=0
-    )
-
-    test_images = imgs[shape_spade[20:]]
+    full_range = mnist_images[np.where(mnist_labels == 7)][:100]
+    partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
     num_examples_to_generate = 16
-    model = CVAE(latent_dim=8, beta=6, shape=[64,64,1])
-    epochs = 2000
+    model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
+    epochs = 800
 
-    batch_size = 8
+    batch_size = 32
 
-    train_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
-                         .shuffle(len(train_images)).batch(batch_size))
-    test_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
-                        .shuffle(len(test_images)).batch(batch_size))
-    date = '5_6/'
-    file_path = 'dSprites/'
-    start_train(epochs, model, train_dataset, test_dataset, date, file_path)
+    full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
+                         .batch(batch_size))
+    partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
+                         .batch(batch_size))
+
+    date = '5_9/'
+    file_path = 'mnist_beta_tcvae/'
+    start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 
