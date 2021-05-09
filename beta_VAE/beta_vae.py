@@ -134,14 +134,11 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     generate_and_save_images(model, 0, test_sample, file_path)
     for epoch in range(epochs):
         start_time = time.time()
-
         '''
         for train_x in full_range_set:
             train_step(model, train_x, 360, optimizer)        
         
         '''
-
-
         for train_p in partial_range_set:
             train_step(model, train_p, 180, optimizer)
         end_time = time.time()
@@ -152,7 +149,6 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             generate_and_save_images(model, epochs, test_sample, file_path)
-
             for i in range(10, 360, 10):
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
@@ -187,9 +183,9 @@ if __name__ == '__main__':
 
     full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                          .batch(batch_size))
-    partial_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
+    partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .batch(batch_size))
 
     date = '5_8/'
-    file_path = 'mnist_test2/'
+    file_path = 'mnist_test3/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
