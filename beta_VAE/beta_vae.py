@@ -172,7 +172,7 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
 
     full_range = mnist_images[np.where(mnist_labels == 3)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 3)][100:]
+    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 4000
