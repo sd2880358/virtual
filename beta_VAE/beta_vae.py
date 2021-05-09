@@ -135,8 +135,12 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     for epoch in range(epochs):
         start_time = time.time()
 
+        '''
         for train_x in full_range_set:
-            train_step(model, train_x, 360, optimizer)
+            train_step(model, train_x, 360, optimizer)        
+        
+        '''
+
 
         for train_p in partial_range_set:
             train_step(model, train_p, 180, optimizer)
