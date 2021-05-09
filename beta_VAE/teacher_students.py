@@ -151,13 +151,16 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     for epoch in range(epochs):
         start_time = time.time()
 
+        '''
+        
+        
         for train_x in full_range_set:
             train_step(model, train_x, 360, optimizer)
 
-        '''
+       '''
         for train_p in partial_range_set:
             train_step(model, train_p, 180, optimizer)
-        '''
+
 
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
@@ -219,7 +222,7 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
     date = '5_9/'
-    file_path = 'teacher_network/'
+    file_path = 'student_network/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 
