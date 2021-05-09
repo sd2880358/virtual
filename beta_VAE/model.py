@@ -60,7 +60,7 @@ class CVAE(tf.keras.Model):
                 tf.keras.layers.Dense(
                     512, activation='relu'),
                 tf.keras.layers.Dense(
-                    2352, kernel_size=3,
+                    2352,
                     activation='relu'),
                 # No activation
                 tf.keras.layers.Reshape(target_shape=(28*28*3)),
