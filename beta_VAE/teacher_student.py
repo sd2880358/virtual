@@ -125,19 +125,15 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 def start_train(epochs, student_model, teacher_model, full_range_set, partial_range_set, date, filePath):
     @tf.function
-    def train_step(student_model, teacher_model, x, degree_set, optimizer):
+    def train_step(student_model, x, degree_set, optimizer):
         for i in range(10, degree_set + 10, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
-
-                x_mean, x_var = teacher_model.encode(x)
-                z = teacher_model.reparameterize(x_mean, x_var)
-                s_x = teacher_model.sample(z)
-                r_x = rotate(s_x, d)
-                ori_loss = compute_loss(student_model, s_x)
-                rota_loss = reconstruction_loss(student_model, s_x)
-                ori_cross_l = ori_cross_loss(student_model, s_x, d, r_x)
-                rota_cross_l = rota_cross_loss(student_model, s_x, d, r_x)
+                r_x = rotate(x, d)
+                ori_loss = compute_loss(student_model, x)
+                rota_loss = reconstruction_loss(student_model, x)
+                ori_cross_l = ori_cross_loss(student_model, x, d, x)
+                rota_cross_l = rota_cross_loss(student_model, x, d, x)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, student_model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, student_model.trainable_variables))
@@ -158,12 +154,15 @@ def start_train(epochs, student_model, teacher_model, full_range_set, partial_ra
 
 
         for train_x in full_range_set:
-            train_step(student_model, teacher_model, train_x, 360, optimizer)
+            x_mean, x_var = teacher_model.encode(train_x)
+            z = teacher_model.reparameterize(x_mean, x_var)
+            s_x = teacher_model.sample(z)
+            train_step(student_model, s_x, 360, optimizer)
 
-        '''
+
         for train_p in partial_range_set:
-            train_step(model, train_p, 180, optimizer)
-        '''
+            train_step(student_model, train_p, 180, optimizer)
+
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
