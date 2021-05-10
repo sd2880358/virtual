@@ -150,14 +150,11 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
-
-        '''
         
         
         for train_x in full_range_set:
             train_step(model, train_x, 360, optimizer)
 
-       '''
         for train_p in partial_range_set:
             train_step(model, train_p, 180, optimizer)
 
@@ -209,7 +206,7 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
 
     full_range = mnist_images[np.where(mnist_labels == 7)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
+    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, model="mlp", shape=[28, 28, 1])
     epochs = 800
@@ -221,8 +218,8 @@ if __name__ == '__main__':
     partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .batch(batch_size))
 
-    date = '5_9/'
-    file_path = 'student_network/'
+    date = '5_10/'
+    file_path = 'beta_tcvae/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 
