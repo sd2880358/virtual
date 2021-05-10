@@ -204,7 +204,7 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
 
     full_range = mnist_images[np.where(mnist_labels == 7)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
+    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
     num_examples_to_generate = 16
     student_model = CVAE(latent_dim=8, beta=6, model="mlp", shape=[28, 28, 1])
     teacher_model = CVAE(latent_dim=8, beta=6, model="mlp", shape=[28, 28, 1])
@@ -224,7 +224,7 @@ if __name__ == '__main__':
                            .batch(batch_size))
 
     date = '5_9/'
-    file_path = 'student_network/'
+    file_path = 'student_network2/'
     start_train(epochs, student_model, teacher_model, full_range_digit, partial_range_digit, date, file_path)
 
 
