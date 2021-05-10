@@ -132,7 +132,7 @@ def start_train(epochs, student_model, teacher_model, full_range_set, partial_ra
 
                 x_mean, x_var = teacher_model.encode(x)
                 z = teacher_model.reparameterize(x_mean, x_var)
-                s_x = teacher_model.decode(z)
+                s_x = teacher_model.sample(z)
                 r_x = rotate(s_x, d)
                 ori_loss = compute_loss(student_model, s_x)
                 rota_loss = reconstruction_loss(student_model, s_x)
