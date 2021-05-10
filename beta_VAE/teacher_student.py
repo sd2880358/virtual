@@ -209,12 +209,12 @@ if __name__ == '__main__':
     num_examples_to_generate = 16
     student_model = CVAE(latent_dim=8, beta=6, model="mlp", shape=[28, 28, 1])
     teacher_model = CVAE(latent_dim=8, beta=6, model="mlp", shape=[28, 28, 1])
-    classifier_path = checkpoint_path = "./checkpoints/teacher_network"
+    classifier_path = checkpoint_path = "./checkpoints/5_9/teacher_network"
     teacher = tf.train.Checkpoint(model=teacher_model)
     teacher_manager = tf.train.CheckpointManager(teacher, classifier_path, max_to_keep=5)
     if teacher_manager.latest_checkpoint:
         teacher.restore(teacher_manager.latest_checkpoint)
-        print('classifier checkpoint restored!!')
+        print('teacher network checkpoint restored!!')
     epochs = 800
 
     batch_size = 32
