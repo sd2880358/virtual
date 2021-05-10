@@ -131,9 +131,9 @@ def start_train(epochs, student_model, teacher_model, full_range_set, partial_ra
             with tf.GradientTape() as tape:
                 r_x = rotate(x, d)
                 ori_loss = compute_loss(student_model, x)
-                rota_loss = reconstruction_loss(student_model, x)
-                ori_cross_l = ori_cross_loss(student_model, x, d, x)
-                rota_cross_l = rota_cross_loss(student_model, x, d, x)
+                rota_loss = reconstruction_loss(student_model, r_x)
+                ori_cross_l = ori_cross_loss(student_model, x, d, r_x)
+                rota_cross_l = rota_cross_loss(student_model, x, d, r_x)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, student_model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, student_model.trainable_variables))
