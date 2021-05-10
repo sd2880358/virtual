@@ -200,24 +200,46 @@ def calculate_fid(real, fake):
 
 
 if __name__ == '__main__':
-    (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
-    mnist_images = preprocess_images(mnist_images)
+    dataset_zip = np.load('../dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
 
-    full_range = mnist_images[np.where(mnist_labels == 7)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
+    print('Keys in the dataset:', dataset_zip.keys())
+    imgs = dataset_zip['imgs']
+    imgs = np.reshape(imgs, [len(imgs), 64, 64, 1]).astype('float32')
+    latents_values = dataset_zip['latents_values']
+    latents_classes = dataset_zip['latents_classes']
+    latents_classes = pd.DataFrame(latents_classes)
+    latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
+    full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
+                                        (latents_classes['scale'] == 1) &
+                                        (latents_classes['x_axis'] == 15) &
+                                        (latents_classes['y_axis'] == 15))].index
+
+    partial_index = latents_classes.loc[((latents_classes['shape'] == 2) &
+                                        (latents_classes['scale'] == 4) &
+                                        (latents_classes['x_axis'] == 15) &
+                                        (latents_classes['y_axis'] == 15))].index
+    train_images = imgs[full_index][0:1]
+    test_images = imgs[partial_index][0:1]
+
+    latent_dim = 8
     num_examples_to_generate = 16
-    model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
-    epochs = 800
+    test_size = 10
+    random_vector_for_generation = tf.random.normal(
+        shape=[num_examples_to_generate, latent_dim])
+    epochs = 3000
+    model = CVAE(latent_dim=latent_dim, beta=4, shape=[64, 64, 1])
+    sample_size = 1000
+    train_size = sample_size * 10
+    # train_size = 10000
+    # train_images = train_set
+    batch_size = 1
+    full_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
+                     .batch(batch_size))
+    partial_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
+                    .batch(batch_size))
 
-    batch_size = 32
-
-    full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
-                         .batch(batch_size))
-    partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
-                         .batch(batch_size))
-
-    date = '5_9/'
-    file_path = 'mnist_beta_tcvae/'
-    start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
+    date = '5_10/'
+    file_path = 'dSprites/'
+    start_train(epochs, model, full_dataset, partial_dataset, date, file_path)
 
 
