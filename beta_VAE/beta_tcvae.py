@@ -210,14 +210,14 @@ if __name__ == '__main__':
     latents_classes = pd.DataFrame(latents_classes)
     latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
     full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
-                                        (latents_classes['scale'] == 1) &
-                                        (latents_classes['x_axis'] == 15) &
-                                        (latents_classes['y_axis'] == 15))].index
+                                        (latents_classes['scale'] == 4) &
+                                        (latents_classes['x_axis'] == 0) &
+                                        (latents_classes['y_axis'] == 0))].index
 
     partial_index = latents_classes.loc[((latents_classes['shape'] == 2) &
                                         (latents_classes['scale'] == 4) &
-                                        (latents_classes['x_axis'] == 15) &
-                                        (latents_classes['y_axis'] == 15))].index
+                                        (latents_classes['x_axis'] == 31) &
+                                        (latents_classes['y_axis'] == 31))].index
     train_images = imgs[full_index][0:1]
     test_images = imgs[partial_index][0:1]
 
@@ -235,7 +235,7 @@ if __name__ == '__main__':
                     .batch(batch_size))
 
     date = '5_10/'
-    file_path = 'dSprites/'
+    file_path = 'dSprites_location/'
     start_train(epochs, model, full_dataset, partial_dataset, date, file_path)
 
 
