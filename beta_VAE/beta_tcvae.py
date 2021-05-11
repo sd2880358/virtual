@@ -146,7 +146,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         print('Latest checkpoint restored!!')
     for test_batch in partial_range_set.take(1):
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
-    generate_and_save_images(model, 0, test_sample, file_path)
+    #generate_and_save_images(model, 0, test_sample, file_path)
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
@@ -160,11 +160,11 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
-        if (epoch + 1)%100 == 0:
+        if (epoch + 1)%1000 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for i in range(10, 360, 10):
+            for i in range(10, 370, 10):
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
                 ori_loss = compute_loss(model, test_sample)
@@ -175,7 +175,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                 loss(total_loss)
 
             elbo = -loss.result()
-            generate_and_save_images(model, epoch, test_sample, file_path)
+            #generate_and_save_images(model, epoch, test_sample, file_path)
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epoch+1, elbo, end_time - start_time))
 
@@ -228,10 +228,6 @@ if __name__ == '__main__':
         shape=[num_examples_to_generate, latent_dim])
     epochs = 3000
     model = CVAE(latent_dim=latent_dim, beta=4, shape=[64, 64, 1])
-    sample_size = 1000
-    train_size = sample_size * 10
-    # train_size = 10000
-    # train_images = train_set
     batch_size = 1
     full_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
                      .batch(batch_size))
