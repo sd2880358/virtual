@@ -171,7 +171,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, com
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
-        if (epoch + 1)%100 == 0:
+        if (epoch + 1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
