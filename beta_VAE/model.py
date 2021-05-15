@@ -9,6 +9,7 @@ class CVAE(tf.keras.Model):
     self.latent_dim = latent_dim
     self.beta = beta
     self.shape = shape
+    self.angle_dim = 2
     self.output_f = int(shape[0]/4)
     self.output_s = shape[2]
     if (model == "cnn"):
@@ -68,7 +69,33 @@ class CVAE(tf.keras.Model):
                     1)
             ]
         )
+
         assert self.decoder.output_shape == (None, 28, 28, 1)
+    elif (model == 'raw'):
+        self.encoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=shape),
+                tf.keras.layers.Dense(
+                    64, activation='relu'),
+                tf.keras.layers.Dense(
+                32, activation='relu'),
+                tf.keras.layers.Flatten(),
+                # No activation
+                tf.keras.layers.Dense(latent_dim + latent_dim),
+            ]
+        )
+        self.decoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=(latent_dim-2,)),
+                tf.keras.layers.Dense(latent_dim * latent_dim, activation=tf.nn.relu),
+                tf.keras.layers.Dense(
+                    512, activation='relu'),
+                tf.keras.layers.Dense(
+                    784,
+                    activation='relu')
+            ]
+        )
+        assert self.decoder.output_shape == (None, 784)
 
   @tf.function
   def sample(self, eps=None):
@@ -80,9 +107,17 @@ class CVAE(tf.keras.Model):
     mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
     return mean, logvar
 
-  def reparameterize(self, mean, logvar):
+  def reparameterize(self, mean, logvar, id=False):
     eps = tf.random.normal(shape=mean.shape)
-    return eps * tf.exp(logvar * .5) + mean
+    z = eps * tf.exp(logvar * .5) + mean
+    if id == True:
+        identity = z[:, 2:]
+        rotation = z[:, :2]
+        return z, rotation, identity
+    return z
+
+  def split_identity(self, mean, logvar):
+      return self.reparameterize(mean, logvar, id=True)
 
   def decode(self, z, apply_sigmoid=False):
     logits = self.decoder(z)
@@ -90,6 +125,10 @@ class CVAE(tf.keras.Model):
       probs = tf.sigmoid(logits)
       return probs
     return logits
+
+  def reshape(self, x):
+      return tf.keras.layers.Reshape([28, 28, 1])(x)
+
 
 class Classifier(tf.keras.Model):
     def __init__(self, shape):
@@ -139,3 +178,33 @@ class Classifier(tf.keras.Model):
         # average across images
         return scores
 
+
+
+class S_Decoder(tf.keras.Model):
+    def __init__ (self, shape=786):
+        super(S_Decoder, self).__init__()
+        self.shape = shape
+        self.decoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=(shape)),
+                tf.keras.layers.Dense(784, activation='relu'),
+                tf.keras.layers.Dense(
+                    784, activation='relu'),
+                tf.keras.layers.Dense(
+                    784,
+                    activation='relu'),
+                tf.keras.layers.Reshape([28, 28, 1])
+            ]
+
+        )
+        assert self.decoder.output_shape == (None, 28, 28, 1)
+
+    def decode(self, x, factor, apply_sigmoid=False):
+        input = tf.concat([x, factor], 1)
+        logit = self.decoder(input)
+        if apply_sigmoid:
+            return tf.sigmoid(logit)
+        return logit
+
+    def sample(self, x, factor):
+        return self.decode(x, factor, apply_sigmoid=True)
