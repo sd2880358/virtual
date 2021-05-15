@@ -156,7 +156,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, com
         print('Latest checkpoint restored!!')
     for test_batch in partial_range_set.take(1):
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
-    generate_and_save_images(model, 0, test_sample, file_path)
+    generate_and_save_images(model, s_decoder, 0, test_sample, file_path)
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
