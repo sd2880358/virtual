@@ -132,7 +132,7 @@ def generate_and_save_images(model, s_decoder, epoch, test_sample, file_path):
 
 
 def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, date, filePath):
-    @tf.funtion
+    @tf.function
     def train_step(x, degree_set):
         for i in range(10, degree_set + 10, 10):
             d = np.radians(i)
