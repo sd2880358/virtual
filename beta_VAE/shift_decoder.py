@@ -99,14 +99,18 @@ def rota_cross_loss(model, s_decoder, x, d, r_x):
     return -tf.reduce_mean(logx_z)
 
 
-def reconstruction_loss(model, s_decoder, X):
-    mean, logvar = model.encode(X)
+def reconstruction_loss(model, s_decoder, X, r_x):
+    mean, logvar = model.encode(r_x)
     z, angle, identity = model.split_identity(mean, logvar)
-    X_pred = model.decode(identity)
-    x_logit = s_decoder.decode(angle, X_pred)
+    r_X_pred = model.decode(identity)
+    r_x_logit = s_decoder.decode(angle, r_X_pred)
+    r_cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=r_x_logit, labels=r_x)
+    log_r_x_z = tf.reduce_sum(r_cross_ent, axis=[1, 2, 3])
+
+    x_logit = model.reshape(r_X_pred)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=X)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
-    return -tf.reduce_mean(logx_z)
+
+    return tf.reduce_mean(cross_ent), tf.reduce_mean(log_r_x_z)
 
 
 def generate_and_save_images(model, s_decoder, epoch, test_sample, file_path):
@@ -127,24 +131,23 @@ def generate_and_save_images(model, s_decoder, epoch, test_sample, file_path):
     plt.close()
 
 
-def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, combine_range_set, date, filePath):
-    def train_step(x, degree_set=None, t_decoder=True):
-        if t_decoder == False:
-            with tf.GradientTape() as tape:
+def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, date, filePath):
+    @tf.funtion
+    def train_step(x, degree_set):
+        for i in range(10, degree_set + 10, 10):
+            d = np.radians(i)
+            with tf.GradientTape(persistent=True) as tape:
+                r_x = rotate(x, d)
                 ori_loss = compute_loss(model, x)
-            gradients = tape.gradient(ori_loss, model.trainable_variables)
-            m_optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        else:
-            for i in range(10, degree_set + 10, 10):
-                d = np.radians(i)
-                with tf.GradientTape() as tape:
-                    r_x = rotate(x, d)
-                    rota_loss = reconstruction_loss(model, s_decoder, r_x)
-                    ori_cross_l = ori_cross_loss(model, s_decoder, x, d, r_x)
-                    rota_cross_l = rota_cross_loss(model, s_decoder, x, d, r_x)
-                    total_loss = rota_loss + ori_cross_l + rota_cross_l
-                gradients = tape.gradient(total_loss, s_decoder.trainable_variables)
-                s_optimizer.apply_gradients(zip(gradients, s_decoder.trainable_variables))
+                o_loss, rota_loss = reconstruction_loss(model, s_decoder, x, r_x)
+                ori_cross_l = ori_cross_loss(model, s_decoder, x, d, r_x)
+                rota_cross_l = rota_cross_loss(model, s_decoder, x, d, r_x)
+                s_decoder_loss = rota_loss + ori_cross_l + rota_cross_l
+                model_loss = ori_loss + o_loss
+            m_gradients = tape.gradient(model_loss, model.trainable_variables)
+            m_optimizer.apply_gradients(zip(m_gradients, model.trainable_variables))
+            s_gradients = tape.gradient(s_decoder_loss, s_decoder.trainable_variables)
+            s_optimizer.apply_gradients(zip(s_gradients, s_decoder.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
                                s_decoder=s_decoder,
@@ -158,20 +161,19 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, com
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     generate_and_save_images(model, s_decoder, 0, test_sample, file_path)
     display.clear_output(wait=False)
+
     for epoch in range(epochs):
         start_time = time.time()
 
-        for train_c in combine_range_set:
-            train_step(train_c, t_decoder=False)
-
         for train_x in full_range_set:
             train_step(train_x, degree_set=360)
+
         for train_p in partial_range_set:
             train_step(train_p, degree_set=180)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
-        if (epoch + 1)%10 == 0:
+        if (epoch + 1000)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -228,11 +230,9 @@ if __name__ == '__main__':
     partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .batch(batch_size))
 
-    combine_range_digit = (tf.data.Dataset.from_tensor_slices(tf.concat([full_range,partial_range],0))
-                           .shuffle(200).batch(batch_size))
 
     date = '5_15/'
     file_path = 'dSprites_location/'
-    start_train(epochs, model, shift, combine_range_digit, full_range_digit, partial_range_digit, date, file_path)
+    start_train(epochs, model, shift, full_range_digit, partial_range_digit, date, file_path)
 
 
