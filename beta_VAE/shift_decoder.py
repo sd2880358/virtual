@@ -108,6 +108,7 @@ def reconstruction_loss(model, s_decoder, X, r_x):
     log_r_x_z = tf.reduce_sum(r_cross_ent, axis=[1, 2, 3])
 
     x_logit = model.reshape(r_X_pred)
+
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=X)
 
     return tf.reduce_mean(cross_ent), tf.reduce_mean(log_r_x_z)
@@ -140,9 +141,9 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
                 r_x = rotate(x, d)
                 ori_loss = compute_loss(model, x)
                 o_loss, rota_loss = reconstruction_loss(model, s_decoder, x, r_x)
-                ori_cross_l = ori_cross_loss(model, s_decoder, x, d, r_x)
-                rota_cross_l = rota_cross_loss(model, s_decoder, x, d, r_x)
-                s_decoder_loss = rota_loss + ori_cross_l + rota_cross_l
+                #ori_cross_l = ori_cross_loss(model, s_decoder, x, d, r_x)
+                #rota_cross_l = rota_cross_loss(model, s_decoder, x, d, r_x)
+                s_decoder_loss = rota_loss
                 model_loss = ori_loss + o_loss
             m_gradients = tape.gradient(model_loss, model.trainable_variables)
             m_optimizer.apply_gradients(zip(m_gradients, model.trainable_variables))
@@ -220,7 +221,7 @@ if __name__ == '__main__':
     partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1], model='raw')
-    shift = S_Decoder(shape=786)
+    s_decoder = S_Decoder(shape=786)
     epochs = 8000
 
     batch_size = 32
@@ -231,8 +232,8 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
 
-    date = '5_15/'
-    file_path = 'dSprites_location/'
-    start_train(epochs, model, shift, full_range_digit, partial_range_digit, date, file_path)
+    date = '5_16/'
+    file_path = 'mnist/'
+    start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
 
 
