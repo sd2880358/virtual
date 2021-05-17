@@ -150,7 +150,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
                 o_loss, rota_loss = reconstruction_loss(model, s_decoder, x, r_x)
                 ori_cross_l = ori_cross_loss(model, s_decoder, x, d, r_x)
                 rota_cross_l = rota_cross_loss(model, s_decoder, x, d, r_x)
-                s_decoder_loss = rota_loss
+                s_decoder_loss = rota_loss + ori_cross_l + rota_cross_l
                 model_loss = ori_loss + o_loss
             m_gradients = tape.gradient(model_loss, model.trainable_variables)
             m_optimizer.apply_gradients(zip(m_gradients, model.trainable_variables))
