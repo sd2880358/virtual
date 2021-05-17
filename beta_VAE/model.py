@@ -186,7 +186,7 @@ class S_Decoder(tf.keras.Model):
         self.input_size = x_size
         self.shape = shape
         self.factor_dims = factor_dims
-        self.encoder = tf.keras.Sequentialself.encoder = tf.keras.Sequential(
+        self.encoder = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=x_size),
                 tf.keras.layers.Dense(
@@ -195,7 +195,7 @@ class S_Decoder(tf.keras.Model):
                 32, activation='relu'),
                 tf.keras.layers.Flatten(),
                 # No activation
-                tf.keras.layers.Dense(factor_dims),
+                tf.keras.layers.Dense(factor_dims)
             ]
         )
         self.decoder = tf.keras.Sequential(
