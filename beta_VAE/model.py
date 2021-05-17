@@ -181,14 +181,14 @@ class Classifier(tf.keras.Model):
 
 
 class S_Decoder(tf.keras.Model):
-    def __init__ (self, input=[28,28,1], shape=786, factor_dims=2):
+    def __init__ (self, input_size=[28,28,1], shape=786, factor_dims=2):
         super(S_Decoder, self).__init__()
-        self.shape = shape
+        self.input_size = input_size
         self.input = input
         self.factor_dims = factor_dims
         self.encoder = tf.keras.Sequentialself.encoder = tf.keras.Sequential(
             [
-                tf.keras.layers.InputLayer(input_shape=shape),
+                tf.keras.layers.InputLayer(input_shape=input_size),
                 tf.keras.layers.Dense(
                     64, activation='relu'),
                 tf.keras.layers.Dense(
