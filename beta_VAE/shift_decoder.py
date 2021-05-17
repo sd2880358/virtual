@@ -105,6 +105,7 @@ def reconstruction_loss(model, s_decoder, X, r_x):
     r_X_pred = model.decode(identity)
     r_x_logit = s_decoder.decode(r_X_pred, angle)
     r_cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=r_x_logit, labels=r_x)
+
     log_r_x_z = tf.reduce_sum(r_cross_ent, axis=[1, 2, 3])
 
     x_logit = model.reshape(r_X_pred)
@@ -135,7 +136,7 @@ def generate_and_save_images(model, s_decoder, epoch, test_sample, file_path):
 def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(x, degree_set):
-        for i in range(10, degree_set + 10, 10):
+        for i in range(0, degree_set + 10, 10):
             d = np.radians(i)
             with tf.GradientTape(persistent=True) as tape:
                 r_x = rotate(x, d)
@@ -178,7 +179,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for i in range(10, 370, 10):
+            for i in range(0, 370, 10):
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
                 ori_loss = compute_loss(model, test_sample)
@@ -232,8 +233,8 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
 
-    date = '5_16/'
-    file_path = 'mnist_test2/'
+    date = '5_17/'
+    file_path = 'mnist_test3/'
     start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
 
 

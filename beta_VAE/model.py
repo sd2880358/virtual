@@ -188,11 +188,6 @@ class S_Decoder(tf.keras.Model):
             [
                 tf.keras.layers.InputLayer(input_shape=(shape)),
                 tf.keras.layers.Dense(784, activation='relu'),
-                tf.keras.layers.Dense(
-                    784, activation='relu'),
-                tf.keras.layers.Dense(
-                    784,
-                    activation='relu'),
                 tf.keras.layers.Reshape([28, 28, 1])
             ]
 
