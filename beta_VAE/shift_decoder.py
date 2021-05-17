@@ -69,7 +69,7 @@ def ori_cross_loss(model, s_decoder, x, d, r_x):
     mean, logvar = model.encode(r_x)
     z = model.reparameterize(mean, logvar)
     c, s = np.cos(d), np.sin(d)
-    latent = s_decoder.facor_dims
+    latent = s_decoder.factor_dims
     r_m = np.identity(latent)
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, -s], [s, c]
 
@@ -86,7 +86,7 @@ def ori_cross_loss(model, s_decoder, x, d, r_x):
 
 def rota_cross_loss(model, s_decoder, x, d, r_x):
     c, s = np.cos(d), np.sin(d)
-    latent = s_decoder.facor_dims
+    latent = s_decoder.factor_dims
     r_m = np.identity(latent)
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
     mean, logvar = model.encode(x)
