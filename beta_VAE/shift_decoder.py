@@ -117,9 +117,12 @@ def reconstruction_loss(model, s_decoder, X, r_x):
 
 def generate_and_save_images(model, s_decoder, epoch, test_sample, file_path):
     mean, logvar = model.encode(test_sample)
-    z, angle, id = model.split_identity(mean, logvar)
-    identity = model.decode(id)
-    predictions = s_decoder.sample(identity, angle)
+    z = model.reparameterize(mean, logvar)
+    identity = model.decode(z)
+
+    factor = s_decoder.encode(test_sample)
+    predictions = s_decoder.sample(identity, factor)
+
     fig = plt.figure(figsize=(4, 4))
 
     for i in range(predictions.shape[0]):
