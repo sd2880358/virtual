@@ -26,8 +26,8 @@ def kl_divergence(mean, logvar):
 def compute_loss(model, x):
     beta = model.beta
     mean, logvar = model.encode(x)
-    z, rotation, identity = model.split_identity(mean, logvar)
-    identity = model.decode(identity)
+    z = model.split_identity(mean, logvar)
+    identity = model.decode(z)
     x_logit = model.reshape(identity)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
     logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1, 2, 3]))
@@ -101,15 +101,15 @@ def rota_cross_loss(model, s_decoder, x, d, r_x):
 
 def reconstruction_loss(model, s_decoder, X, r_x):
     mean, logvar = model.encode(r_x)
-    z, angle, identity = model.split_identity(mean, logvar)
-    r_X_pred = model.decode(identity)
-    r_x_logit = s_decoder.decode(r_X_pred, angle)
+    z = model.reparameterize(mean, logvar)
+    r_X_pred = model.decode(z)
+    factor = s_decoder.encode(r_x)
+
+    r_x_logit = s_decoder.decode(r_X_pred, factor)
+
     r_cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=r_x_logit, labels=r_x)
-
     log_r_x_z = tf.reduce_sum(r_cross_ent, axis=[1, 2, 3])
-
     x_logit = model.reshape(r_X_pred)
-
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=X)
 
     return tf.reduce_mean(cross_ent), tf.reduce_mean(log_r_x_z)
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     full_range = mnist_images[np.where(mnist_labels == 7)][:100]
     partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
     num_examples_to_generate = 16
-    model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1], model='raw')
+    model = CVAE(latent_dim=6, beta=6, shape=[28, 28, 1], model='raw')
     s_decoder = S_Decoder(shape=786)
     epochs = 8000
 
@@ -234,7 +234,7 @@ if __name__ == '__main__':
 
 
     date = '5_17/'
-    file_path = 'mnist_test3/'
+    file_path = 'mnist_test4/'
     start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
 
 

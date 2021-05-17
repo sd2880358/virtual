@@ -86,7 +86,7 @@ class CVAE(tf.keras.Model):
         )
         self.decoder = tf.keras.Sequential(
             [
-                tf.keras.layers.InputLayer(input_shape=(latent_dim-2,)),
+                tf.keras.layers.InputLayer(input_shape=(latent_dim)),
                 tf.keras.layers.Dense(latent_dim * latent_dim, activation=tf.nn.relu),
                 tf.keras.layers.Dense(
                     512, activation='relu'),
@@ -181,9 +181,23 @@ class Classifier(tf.keras.Model):
 
 
 class S_Decoder(tf.keras.Model):
-    def __init__ (self, shape=786):
+    def __init__ (self, input=[28,28,1], shape=786, factor_dims=2):
         super(S_Decoder, self).__init__()
         self.shape = shape
+        self.input = input
+        self.factor_dims = factor_dims
+        self.encoder = tf.keras.Sequentialself.encoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=shape),
+                tf.keras.layers.Dense(
+                    64, activation='relu'),
+                tf.keras.layers.Dense(
+                32, activation='relu'),
+                tf.keras.layers.Flatten(),
+                # No activation
+                tf.keras.layers.Dense(factor_dims),
+            ]
+        )
         self.decoder = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=(shape)),
@@ -200,6 +214,9 @@ class S_Decoder(tf.keras.Model):
         if apply_sigmoid:
             return tf.sigmoid(logit)
         return logit
+
+    def encode(self, X):
+        return self.encoder(X)
 
     def sample(self, x, factor):
         return self.decode(x, factor, apply_sigmoid=True)
