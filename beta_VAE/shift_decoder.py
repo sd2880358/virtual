@@ -67,13 +67,15 @@ def rotate_vector(vector, matrix):
 
 def ori_cross_loss(model, s_decoder, x, d, r_x):
     mean, logvar = model.encode(r_x)
-    r_z, angle, identity = model.split_identity(mean, logvar)
+    z = model.reparameterize(mean, logvar)
     c, s = np.cos(d), np.sin(d)
-    latent = model.angle_dim
+    latent = s_decoder.facor_dims
     r_m = np.identity(latent)
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, -s], [s, c]
-    phi_angle = rotate_vector(angle, r_m)
-    phi_id = model.decode(identity)
+
+    factors = s_decoder.encode(r_x)
+    phi_angle = rotate_vector(factors, r_m)
+    phi_id = model.decode(z)
     phi_x = s_decoder.decode(phi_id, phi_angle)
 
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
@@ -84,13 +86,14 @@ def ori_cross_loss(model, s_decoder, x, d, r_x):
 
 def rota_cross_loss(model, s_decoder, x, d, r_x):
     c, s = np.cos(d), np.sin(d)
-    latent = model.angle_dim
+    latent = s_decoder.facor_dims
     r_m = np.identity(latent)
     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
     mean, logvar = model.encode(x)
-    z, angle, identity = model.split_identity(mean, logvar)
-    phi_angle = rotate_vector(angle, r_m)
-    phi_identity = model.decode(identity)
+    z = model.reparameterize(mean, logvar)
+    factors = s_decoder.encode(x)
+    phi_angle = rotate_vector(factors, r_m)
+    phi_identity = model.decode(z)
     phi_x = s_decoder.decode(phi_identity, phi_angle)
 
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
