@@ -26,7 +26,7 @@ def kl_divergence(mean, logvar):
 def compute_loss(model, x):
     beta = model.beta
     mean, logvar = model.encode(x)
-    z = model.split_identity(mean, logvar)
+    z = model.reparameterize(mean, logvar)
     identity = model.decode(z)
     x_logit = model.reshape(identity)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)

@@ -76,7 +76,7 @@ class CVAE(tf.keras.Model):
             [
                 tf.keras.layers.InputLayer(input_shape=shape),
                 tf.keras.layers.Dense(
-                    64, activation='relu'),
+                64, activation='relu'),
                 tf.keras.layers.Dense(
                 32, activation='relu'),
                 tf.keras.layers.Flatten(),
