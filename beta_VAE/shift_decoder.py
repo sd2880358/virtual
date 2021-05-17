@@ -186,7 +186,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
                 m_loss, rota_loss = reconstruction_loss(model, s_decoder, test_sample, r_x)
                 ori_cross_l = ori_cross_loss(model, s_decoder, test_sample, d, r_x)
                 rota_cross_l = rota_cross_loss(model, s_decoder, test_sample, d, r_x)
-                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l + m_loss
+                total_loss = rota_loss
                 loss(total_loss)
 
             elbo = -loss.result()
