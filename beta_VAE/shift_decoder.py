@@ -112,9 +112,9 @@ def reconstruction_loss(model, s_decoder, X, r_x):
 
     r_cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=r_x_logit, labels=r_x)
     log_r_x_z = tf.reduce_sum(r_cross_ent, axis=[1, 2, 3])
+
     x_logit = model.reshape(r_X_pred)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=X)
-
     return tf.reduce_mean(cross_ent), tf.reduce_mean(log_r_x_z)
 
 
@@ -150,7 +150,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
                 o_loss, rota_loss = reconstruction_loss(model, s_decoder, x, r_x)
                 ori_cross_l = ori_cross_loss(model, s_decoder, x, d, r_x)
                 rota_cross_l = rota_cross_loss(model, s_decoder, x, d, r_x)
-                s_decoder_loss = rota_loss
+                s_decoder_loss = rota_loss + ori_cross_l + rota_cross_l
                 model_loss = ori_loss + o_loss
             m_gradients = tape.gradient(model_loss, model.trainable_variables)
             m_optimizer.apply_gradients(zip(m_gradients, model.trainable_variables))
@@ -192,7 +192,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
                 m_loss, rota_loss = reconstruction_loss(model, s_decoder, test_sample, r_x)
                 ori_cross_l = ori_cross_loss(model, s_decoder, test_sample, d, r_x)
                 rota_cross_l = rota_cross_loss(model, s_decoder, test_sample, d, r_x)
-                total_loss = rota_loss
+                total_loss = rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
 
             elbo = -loss.result()
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     num_examples_to_generate = 16
     model = CVAE(latent_dim=6, beta=6, shape=[28, 28, 1], model='raw')
     s_decoder = S_Decoder(shape=786)
-    epochs = 1000
+    epochs = 8000
 
     batch_size = 32
 
@@ -240,7 +240,7 @@ if __name__ == '__main__':
 
 
     date = '5_17/'
-    file_path = 'mnist_test6/'
+    file_path = 'mnist_test7/'
     start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
 
 
