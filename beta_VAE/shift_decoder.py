@@ -179,9 +179,9 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
         for train_p in partial_range_set:
             train_step(train_p, degree_set=180)
         end_time = time.time()
-        loss = tf.keras.metrics.Mean()
-
-        if (epoch + 1)%100 == 0:
+        model_loss = tf.keras.metrics.Mean()
+        decoder_loss = tf.keras.metrics.Mean()
+        if (epoch + 1)%1000 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -193,12 +193,14 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
                 ori_cross_l = ori_cross_loss(model, s_decoder, test_sample, d, r_x)
                 rota_cross_l = rota_cross_loss(model, s_decoder, test_sample, d, r_x)
                 total_loss = rota_loss + ori_cross_l + rota_cross_l
-                loss(total_loss)
+                decoder_loss(total_loss)
+                model_loss(ori_loss)
 
-            elbo = -loss.result()
+            elbo = -model_loss.result()
+            decoder_loss = -decoder_loss.result()
             generate_and_save_images(model, s_decoder, epoch, test_sample, file_path)
-            print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-                  .format(epoch+1, elbo, end_time - start_time))
+            print('Epoch: {}, Decoder{}, Test set ELBO: {}, time elapse for current epoch: {}'
+                  .format(epoch+1, elbo, decoder_loss, end_time - start_time))
 
 
     #compute_and_save_inception_score(model, file_path)
