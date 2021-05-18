@@ -201,7 +201,9 @@ class S_Decoder(tf.keras.Model):
         self.decoder = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=(shape)),
-                tf.keras.layers.Dense(784, activation='relu'),
+                tf.keras.layers.Dense(512, activation='relu'),
+                tf.keras.layers.Dense(2352, activation='relu'),
+                tf.keras.layers.Dense(784),
                 tf.keras.layers.Reshape([28, 28, 1])
             ]
 

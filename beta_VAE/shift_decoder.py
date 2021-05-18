@@ -240,7 +240,7 @@ if __name__ == '__main__':
 
 
     date = '5_17/'
-    file_path = 'mnist_test5/'
+    file_path = 'mnist_test6/'
     start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
 
 
