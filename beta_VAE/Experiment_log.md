@@ -39,3 +39,6 @@
 ## 2nd Generation (3/17/21)
 -  Latent Dimension: MNIST 8  , Celeb 64 
 -  3 conv2d encoder, 3 conv2d layers decoder
+
+## 5/17 model (s_decoder train to encode angle and apply the back propogate )
+- MNIST test 7 full range digit 7, partial digit 9;

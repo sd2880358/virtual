@@ -227,7 +227,7 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
 
     full_range = mnist_images[np.where(mnist_labels == 7)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 9)][100:200]
+    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=6, beta=6, shape=[28, 28, 1], model='raw')
     s_decoder = S_Decoder(shape=786)
@@ -241,8 +241,8 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
 
-    date = '5_17/'
-    file_path = 'mnist_test7/'
+    date = '5_21/'
+    file_path = 'mnist_test8/'
     start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
 
 
