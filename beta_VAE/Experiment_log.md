@@ -41,4 +41,5 @@
 -  3 conv2d encoder, 3 conv2d layers decoder
 
 ## 5/17 model (s_decoder train to encode angle and apply the back propogate )
-- MNIST test 7 full range digit 7, partial digit 9;
+- MNIST test 7 full range digit 7, partial range digit 9;
+- 5/21 mode test 8 full range digit 7, partial range digit 3; 

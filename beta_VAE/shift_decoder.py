@@ -177,7 +177,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
             train_step(train_x, degree_set=360)
 
         for train_p in partial_range_set:
-            train_step(train_p, degree_set=180)
+            train_step(train_p, degree_set=0)
         end_time = time.time()
         model_loss = tf.keras.metrics.Mean()
         decoder_loss = tf.keras.metrics.Mean()
@@ -185,7 +185,7 @@ def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, dat
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for i in range(0, 370, 10):
+            for i in range(0, 390, 10):
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
                 ori_loss = compute_loss(model, test_sample)
@@ -231,7 +231,7 @@ if __name__ == '__main__':
     num_examples_to_generate = 16
     model = CVAE(latent_dim=6, beta=6, shape=[28, 28, 1], model='raw')
     s_decoder = S_Decoder(shape=786)
-    epochs = 8000
+    epochs = 15000
 
     batch_size = 32
 
@@ -241,8 +241,8 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
 
-    date = '5_21/'
-    file_path = 'mnist_test8/'
+    date = '5_22/'
+    file_path = 'mnist_test9/'
     start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
 
 
