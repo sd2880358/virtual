@@ -150,7 +150,7 @@ def generate_and_save_images(model, s_decoder, epoch, test_sample, file_path):
     plt.close()
 
 
-def start_train(epochs, model, s_decoder, full_range_set, partial_range_set, date, filePath):
+def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(model, x, degree_set, optimizer):
         for i in range(10, degree_set + 10, 10):
@@ -238,8 +238,7 @@ if __name__ == '__main__':
     full_range = mnist_images[np.where(mnist_labels == 7)][:100]
     partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
     num_examples_to_generate = 16
-    model = CVAE(latent_dim=6, beta=6, shape=[28, 28, 1], model='raw')
-    s_decoder = S_Decoder(shape=786)
+    model = CVAE(latent_dim=7, beta=6, shape=[28, 28, 1], model='mlp')
     epochs = 7000
 
     batch_size = 32
@@ -252,6 +251,6 @@ if __name__ == '__main__':
 
     date = '5_26/'
     file_path = 'mnist_test10/'
-    start_train(epochs, model, s_decoder, full_range_digit, partial_range_digit, date, file_path)
+    start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 
