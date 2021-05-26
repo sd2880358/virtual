@@ -180,7 +180,8 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             train_step(train_x, degree_set=360)
 
         for train_p in partial_range_set:
-            train_step(train_p, degree_set=0)
+            train_step(train_p, degree_set=180)
+
         end_time = time.time()
         model_loss = tf.keras.metrics.Mean()
         decoder_loss = tf.keras.metrics.Mean()
@@ -233,7 +234,7 @@ if __name__ == '__main__':
     partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=7, beta=6, shape=[28, 28, 1], model='mlp')
-    epochs = 3000
+    epochs = 5000
 
     batch_size = 32
 
