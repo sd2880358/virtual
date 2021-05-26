@@ -12,8 +12,7 @@ from IPython import display
 import pandas as pd
 from scipy.linalg import sqrtm
 
-m_optimizer = tf.keras.optimizers.Adam(1e-4)
-s_optimizer = tf.keras.optimizers.Adam(1e-4)
+optimizer = tf.keras.optimizers.Adam(1e-4)
 mbs = tf.losses.MeanAbsoluteError()
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
@@ -149,7 +148,7 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
-    def train_step(model, x, degree_set, optimizer):
+    def train_step(x, degree_set):
         for i in range(10, degree_set + 10, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
@@ -164,7 +163,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
-                               m_optimizer=m_optimizer)
+                               optimizer=optimizer)
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
