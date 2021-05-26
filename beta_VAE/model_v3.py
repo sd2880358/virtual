@@ -74,7 +74,6 @@ class CVAE(tf.keras.Model):
 
   @tf.function
   def sample(self, degree, eps=None):
-    degree = tf.cast(degree, tf.float32)
     if eps is None:
       eps = tf.random.normal(shape=(100, self.latent_dim))
     return self.decode(degree, eps, apply_sigmoid=True)
@@ -92,7 +91,7 @@ class CVAE(tf.keras.Model):
       return self.reparameterize(mean, logvar, id=True)
 
   def decode(self, Z, Y, apply_sigmoid=False):
-    degree_matrix = tf.fill([Y.shape[0],1], Z)
+    degree_matrix = tf.cast(tf.fill([Y.shape[0],1], Z), tf.float32)
     input = tf.concat([degree_matrix, Y], 1)
     logits = self.decoder(input)
     if apply_sigmoid:
