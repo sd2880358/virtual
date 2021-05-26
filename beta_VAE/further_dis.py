@@ -1,5 +1,5 @@
 import tensorflow as tf
-from model import CVAE, Classifier, S_Decoder
+from model_v3 import CVAE
 from dataset import preprocess_images, divide_dataset
 from tensorflow_addons.image import rotate
 import random
@@ -129,13 +129,10 @@ def compute_loss(model, x):
 
 
 
-def generate_and_save_images(model, s_decoder, epoch, test_sample, file_path):
+def generate_and_save_images(model, epoch, test_sample, file_path):
     mean, logvar = model.encode(test_sample)
     z = model.reparameterize(mean, logvar)
-    identity = model.decode(z)
-
-    factor = s_decoder.encode(test_sample)
-    predictions = s_decoder.sample(identity, factor)
+    predictions = model.sample(0, z)
 
     fig = plt.figure(figsize=(4, 4))
 
@@ -167,16 +164,14 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(model=model,
-                               s_decoder=s_decoder,
-                               m_optimizer=m_optimizer,
-                               s_optimizer=s_optimizer)
+                               m_optimizer=m_optimizer)
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
     for test_batch in partial_range_set.take(1):
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
-    generate_and_save_images(model, s_decoder, 0, test_sample, file_path)
+    generate_and_save_images(model, 0, test_sample, file_path)
     display.clear_output(wait=False)
 
     for epoch in range(epochs):
@@ -198,9 +193,9 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
                 ori_loss = compute_loss(model, test_sample)
-                m_loss, rota_loss = reconstruction_loss(model, s_decoder, test_sample, r_x)
-                ori_cross_l = ori_cross_loss(model, s_decoder, test_sample, d, r_x)
-                rota_cross_l = rota_cross_loss(model, s_decoder, test_sample, d, r_x)
+                m_loss, rota_loss = reconstruction_loss(model,test_sample, r_x)
+                ori_cross_l = ori_cross_loss(model, test_sample, r_x)
+                rota_cross_l = rota_cross_loss(model, test_sample, d, r_x)
                 total_loss = rota_loss + ori_cross_l + rota_cross_l
                 decoder_loss(total_loss)
                 model_loss(ori_loss)
