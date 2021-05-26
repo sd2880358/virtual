@@ -192,7 +192,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
                 ori_loss = compute_loss(model, test_sample)
-                m_loss, rota_loss = reconstruction_loss(model, r_x)
+                rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, test_sample, r_x)
                 rota_cross_l = rota_cross_loss(model, test_sample, d, r_x)
                 total_loss = rota_loss + ori_cross_l + rota_cross_l
