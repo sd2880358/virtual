@@ -233,7 +233,7 @@ if __name__ == '__main__':
     partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=7, beta=6, shape=[28, 28, 1], model='mlp')
-    epochs = 7000
+    epochs = 3000
 
     batch_size = 32
 
