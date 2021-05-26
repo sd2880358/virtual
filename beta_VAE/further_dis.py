@@ -202,7 +202,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
 
             elbo = -model_loss.result()
             decoder_loss = -decoder_loss.result()
-            generate_and_save_images(model, s_decoder, epoch, test_sample, file_path)
+            generate_and_save_images(model, epoch, test_sample, file_path)
             print('Epoch: {}, Decoder{}, Test set ELBO: {}, time elapse for current epoch: {}'
                   .format(epoch+1, elbo, decoder_loss, end_time - start_time))
 

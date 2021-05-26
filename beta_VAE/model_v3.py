@@ -74,6 +74,7 @@ class CVAE(tf.keras.Model):
 
   @tf.function
   def sample(self, degree, eps=None):
+    degree = tf.cast(degree, tf.float32)
     if eps is None:
       eps = tf.random.normal(shape=(100, self.latent_dim))
     return self.decode(degree, eps, apply_sigmoid=True)
