@@ -92,7 +92,7 @@ class CVAE(tf.keras.Model):
 
   def decode(self, Z, Y, apply_sigmoid=False):
     degree_matrix = tf.fill([Y.shape[0],1], Z)
-    input = tf.concat([Z, degree_matrix], 1)
+    input = tf.concat([degree_matrix, Y], 1)
     logits = self.decoder(input)
     if apply_sigmoid:
       probs = tf.sigmoid(logits)
