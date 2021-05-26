@@ -43,3 +43,4 @@
 ## 5/17 model (s_decoder train to encode angle and apply the back propogate )
 - MNIST test 7 full range digit 7, partial range digit 9;
 - 5/21 mode test 8 full range digit 7, partial range digit 3; 
+- 5/26 mode test9 full range digit 7, partial range digit 3 with training method(futher_dis) setting, ;
