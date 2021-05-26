@@ -73,10 +73,10 @@ class CVAE(tf.keras.Model):
         assert self.decoder.output_shape == (None, 28, 28, 1)
 
   @tf.function
-  def sample(self, eps=None):
+  def sample(self, degree, eps=None):
     if eps is None:
       eps = tf.random.normal(shape=(100, self.latent_dim))
-    return self.decode(eps, apply_sigmoid=True)
+    return self.decode(degree, eps, apply_sigmoid=True)
 
   def encode(self, x):
     mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
