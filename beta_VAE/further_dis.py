@@ -185,7 +185,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         end_time = time.time()
         model_loss = tf.keras.metrics.Mean()
         decoder_loss = tf.keras.metrics.Mean()
-        if (epoch + 1)%1000 == 0:
+        if (epoch + 1)%5 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -230,11 +230,11 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    full_range = mnist_images[np.where(mnist_labels == 7)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
+    full_range = mnist_images[np.where(np.isin(mnist_labels, [4,5,6]))]
+    partial_range = mnist_images[np.where(mnist_labels == 3)]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=7, beta=6, shape=[28, 28, 1], model='cnn')
-    epochs = 5000
+    epochs = 50
 
     batch_size = 32
 
@@ -244,8 +244,8 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
 
-    date = '5_27/'
-    file_path = 'mnist_test11/'
+    date = '5_31/'
+    file_path = 'mnist_test12/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 
