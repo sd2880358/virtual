@@ -46,6 +46,8 @@ class CVAE(tf.keras.Model):
             [
                 tf.keras.layers.InputLayer(input_shape=shape),
                 tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(64),
+                tf.keras.layers.Dense(32),
                 # No activation
                 tf.keras.layers.Dense(latent_dim + latent_dim, activation='relu'),
             ]
@@ -56,8 +58,10 @@ class CVAE(tf.keras.Model):
                 tf.keras.layers.Dense(latent_dim * latent_dim, activation=tf.nn.relu),
                 tf.keras.layers.Dense(
                     784, activation='relu'),
-                tf.keras.layers.Reshape(target_shape=[28, 28, 1])]
-
+                tf.keras.layers.Reshape(target_shape=[28, 28, 1])],
+                tf.keras.layers.Dense(32, activation='relu'),
+                tf.keras.layers.Dense(1)
+            
         )
 
         assert self.decoder.output_shape == (None, 28, 28, 1)
