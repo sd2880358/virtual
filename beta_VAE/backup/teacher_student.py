@@ -214,7 +214,7 @@ if __name__ == '__main__':
     if teacher_manager.latest_checkpoint:
         teacher.restore(teacher_manager.latest_checkpoint)
         print('teacher network checkpoint restored!!')
-    epochs = 800
+    epochs = 80
 
     batch_size = 32
 
@@ -223,8 +223,8 @@ if __name__ == '__main__':
     partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                            .batch(batch_size))
 
-    date = '5_9/'
-    file_path = 'student_network2/'
+    date = '5_31/'
+    file_path = 'teacher_network/'
     start_train(epochs, student_model, teacher_model, full_range_digit, partial_range_digit, date, file_path)
 
 
