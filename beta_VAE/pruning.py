@@ -98,6 +98,9 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
 
+    for test_batch in partial_range_set.take(1):
+        test_sample = test_batch[0:num_examples_to_generate, :, :, :]
+
     step_callback.on_train_begin()
     for epoch in range(epochs):
         start_time = time.time()
@@ -119,15 +122,15 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                                                                 ckpt_save_path))
             for i in range(10, 360, 10):
                 d = np.radians(i)
-                r_x = rotate(partial_range_set, d)
-                mean, logvar = teacher.encode(partial_range_set)
+                r_x = rotate(test_sample, d)
+                mean, logvar = teacher.encode(test_sample)
                 z = teacher.reparameterize(mean, logvar)
                 r_mean, r_logvar = teacher.encode(r_x)
                 r_z = teacher.reparameterize(r_mean, r_logvar)
-                ori_loss = reconstruction_loss(teacher_for_pruning, z, partial_range_set)
+                ori_loss = reconstruction_loss(teacher_for_pruning, z, test_sample)
                 rota_loss = reconstruction_loss(teacher_for_pruning, r_z, r_x)
-                ori_cross_l = ori_cross_loss(teacher_for_pruning, r_z, partial_range_set, d, latent_dim=8)
-                rota_cross_l = rota_cross_loss(teacher_for_pruning, z, partial_range_set, d, r_x, latent_dim=8)
+                ori_cross_l = ori_cross_loss(teacher_for_pruning, r_z, test_sample, d, latent_dim=8)
+                rota_cross_l = rota_cross_loss(teacher_for_pruning, z, test_sample, d, r_x, latent_dim=8)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
 
@@ -151,7 +154,7 @@ if __name__ == '__main__':
     checkpoint = tf.train.Checkpoint(model=model)
     checkpoint.restore("./checkpoints/5_9/student_network/ckpt-8")
     teacher = model
-
+    num_examples_to_generate = 16
     batch_size = 32
     epochs = 100
 
