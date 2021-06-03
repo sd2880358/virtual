@@ -8,7 +8,7 @@ import numpy as np
 from tensorflow.linalg import matvec
 import time
 from tensorflow_addons.image import rotate
-
+import math
 def ori_cross_loss(model, r_z, x, d, latent_dim):
     c, s = np.cos(d), np.sin(d)
     latent = latent_dim
@@ -89,7 +89,7 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(initial_sparsity=0.50,
                                                                  final_sparsity=0.80,
                                                                  begin_step=0,
-                                                                 end_step=100 * epochs)
+                                                                 end_step=math.ceil(100/batch_size) * epochs)
     }
     teacher_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model, **pruning_params)
       # run pruning callback
