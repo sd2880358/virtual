@@ -68,8 +68,6 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                     total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                     grads = tape.gradient(total_loss, model_for_pruning.trainable_variables)
                     optimizer.apply_gradients(zip(grads, model_for_pruning.trainable_variables))
-                step_callback.on_epoch_end(batch=unused_arg)  # run pruning callback
-
     base_model = teacher.decoder
     model_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model)
 
