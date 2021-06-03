@@ -52,7 +52,7 @@ def rotate_vector(vector, matrix):
 
 def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePath):
     @tf.function
-    def train_step(teacher, model_for_pruning, train_x, degree_set, optimizer):
+    def train_step(teacher, model_for_pruning, train_x, degree_set, optimizer, step_callback):
         step_callback.on_train_batch_begin(batch=unused_arg)
         for i in range(10, degree_set, 10):
             d = np.radians(i)
