@@ -69,14 +69,11 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 grads = tape.gradient(total_loss, teacher_for_pruning.trainable_variables)
                 optimizer.apply_gradients(zip(grads, teacher_for_pruning.trainable_variables))
-    base_model = teacher.decoder
 
+    base_model = teacher.decoder
     optimizer = tf.keras.optimizers.Adam()
     log_dir = tempfile.mkdtemp()
     unused_arg = -1
-
-
-    base_model = teacher.decoder
     pruning_params = {
         'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(initial_sparsity=0.50,
                                                                  final_sparsity=0.80,
@@ -126,10 +123,10 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                 z = teacher.reparameterize(mean, logvar)
                 r_mean, r_logvar = teacher.encode(r_x)
                 r_z = teacher.reparameterize(r_mean, r_logvar)
-                ori_loss = reconstruction_loss(model_for_pruning, z, train_x)
-                rota_loss = reconstruction_loss(model_for_pruning, r_z, r_x)
-                ori_cross_l = ori_cross_loss(model_for_pruning, r_z, train_x, d, latent_dim=8)
-                rota_cross_l = rota_cross_loss(model_for_pruning, z, train_x, d, r_x, latent_dim=8)
+                ori_loss = reconstruction_loss(teacher_for_pruning, z, train_x)
+                rota_loss = reconstruction_loss(teacher_for_pruning, r_z, r_x)
+                ori_cross_l = ori_cross_loss(teacher_for_pruning, r_z, train_x, d, latent_dim=8)
+                rota_cross_l = rota_cross_loss(teacher_for_pruning, z, train_x, d, r_x, latent_dim=8)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
 
