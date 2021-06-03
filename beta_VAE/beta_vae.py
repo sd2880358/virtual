@@ -151,7 +151,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             generate_and_save_images(model, epochs, test_sample, file_path)
-            for i in range(10, 360, 10):
+            for i in range(10, 370, 10):
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
                 ori_loss = compute_loss(model, test_sample)
