@@ -51,8 +51,8 @@ def rotate_vector(vector, matrix):
 
 
 def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePath):
-    def train_step(teacher, model_for_pruning, train_x, degree_set, optimizer, step_callback):
-        step_callback.on_train_batch_begin(batch=unused_arg)
+    @tf.function
+    def train_step(teacher, model_for_pruning, train_x, degree_set, optimizer):
         for i in range(10, degree_set, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
@@ -68,7 +68,6 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 grads = tape.gradient(total_loss, model_for_pruning.trainable_variables)
                 optimizer.apply_gradients(zip(grads, model_for_pruning.trainable_variables))
-        step_callback.on_train_batch_begin(batch=unused_arg)
     base_model = teacher.decoder
     model_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model)
 
@@ -104,7 +103,9 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         start_time = time.time()
         log_callback.on_epoch_begin(epoch=unused_arg)
         for train_x in full_range_set:
-            train_step(teacher, teacher_for_pruning, train_x, 360, optimizer, step_callback)
+            step_callback.on_train_batch_begin(batch=unused_arg)
+            train_step(teacher, teacher_for_pruning, train_x, 360, optimizer)
+            step_callback.on_train_batch_end(batch=unused_arg)
 
         '''
         for train_p in partial_range_set:
