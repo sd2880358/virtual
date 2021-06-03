@@ -97,6 +97,8 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
+
+    step_callback.on_train_begin()
     for epoch in range(epochs):
         start_time = time.time()
         log_callback.on_epoch_begin(epoch=unused_arg)
