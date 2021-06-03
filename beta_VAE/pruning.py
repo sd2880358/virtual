@@ -153,7 +153,7 @@ if __name__ == '__main__':
                            .batch(batch_size))
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1], model='mlp')
     checkpoint = tf.train.Checkpoint(model=model)
-    checkpoint.restore("./beta_VAE/checkpoints/5_9/teacher_network/ckpt-8")
+    checkpoint.restore("./checkpoints/5_9/teacher_network/ckpt-8")
     teacher = model
 
     batch_size = 32
