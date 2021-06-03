@@ -114,7 +114,7 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
-        if (epoch + 1) % 100 == 0:
+        if (epoch + 1) % 10 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                                 ckpt_save_path))
@@ -150,12 +150,12 @@ if __name__ == '__main__':
                            .batch(batch_size))
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1], model='mlp')
     checkpoint = tf.train.Checkpoint(model=model)
-    checkpoint.restore("./checkpoints/5_9/teacher_network/ckpt-8")
+    checkpoint.restore("./checkpoints/5_9/student_network/ckpt-8")
     teacher = model
 
     batch_size = 32
     epochs = 100
 
     date = '6_1/'
-    file_path = 'pruning_teacher/'
+    file_path = 'pruning_student/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
