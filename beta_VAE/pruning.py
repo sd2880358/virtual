@@ -53,6 +53,7 @@ def rotate_vector(vector, matrix):
 def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(train_x, degree_set, optimizer):
+        step_callback.on_train_batch_begin(batch=unused_arg)
         for i in range(10, degree_set, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
@@ -103,7 +104,6 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         start_time = time.time()
         log_callback.on_epoch_begin(epoch=unused_arg)
         for train_x in full_range_set:
-            step_callback.on_train_batch_begin(batch=unused_arg)
             train_step(teacher, teacher_for_pruning, train_x, 360, optimizer)
         step_callback.on_epoch_end(batch=unused_arg)
 
