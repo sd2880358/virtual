@@ -52,7 +52,7 @@ def rotate_vector(vector, matrix):
 
 def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePath):
     @tf.function
-    def train_step(teacher, model_for_pruning, train_x, degree_set, optimizer):
+    def train_step(train_x, degree_set, optimizer):
         for i in range(10, degree_set, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
@@ -61,13 +61,13 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                 z = teacher.reparameterize(mean, logvar)
                 r_mean, r_logvar = teacher.encode(r_x)
                 r_z = teacher.reparameterize(r_mean, r_logvar)
-                ori_loss = reconstruction_loss(model_for_pruning, z, train_x)
-                rota_loss = reconstruction_loss(model_for_pruning, r_z, r_x)
-                ori_cross_l = ori_cross_loss(model_for_pruning, r_z, train_x, d, latent_dim=8)
-                rota_cross_l = rota_cross_loss(model_for_pruning, z, train_x, d, r_x, latent_dim=8)
+                ori_loss = reconstruction_loss(teacher_for_pruning, z, train_x)
+                rota_loss = reconstruction_loss(teacher_for_pruning, r_z, r_x)
+                ori_cross_l = ori_cross_loss(teacher_for_pruning, r_z, train_x, d, latent_dim=8)
+                rota_cross_l = rota_cross_loss(teacher_for_pruning, z, train_x, d, r_x, latent_dim=8)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-                grads = tape.gradient(total_loss, model_for_pruning.trainable_variables)
-                optimizer.apply_gradients(zip(grads, model_for_pruning.trainable_variables))
+                grads = tape.gradient(total_loss, teacher_for_pruning.trainable_variables)
+                optimizer.apply_gradients(zip(grads, teacher_for_pruning.trainable_variables))
     base_model = teacher.decoder
     model_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model)
 
