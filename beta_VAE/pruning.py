@@ -69,17 +69,10 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                 grads = tape.gradient(total_loss, teacher_for_pruning.trainable_variables)
                 optimizer.apply_gradients(zip(grads, teacher_for_pruning.trainable_variables))
     base_model = teacher.decoder
-    model_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model)
 
     optimizer = tf.keras.optimizers.Adam()
     log_dir = tempfile.mkdtemp()
     unused_arg = -1
-    model_for_pruning.optimizer = optimizer
-    step_callback = tfmot.sparsity.keras.UpdatePruningStep()
-    step_callback.set_model(model_for_pruning)
-    log_callback = tfmot.sparsity.keras.PruningSummaries(
-        log_dir=log_dir)  # Log sparsity and other metrics in Tensorboard.
-    log_callback.set_model(model_for_pruning)
 
 
     base_model = teacher.decoder
@@ -91,6 +84,13 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
     }
     teacher_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model, **pruning_params)
       # run pruning callback
+
+    teacher_for_pruning.optimizer = optimizer
+    step_callback = tfmot.sparsity.keras.UpdatePruningStep()
+    step_callback.set_model(teacher_for_pruning)
+    log_callback = tfmot.sparsity.keras.PruningSummaries(
+        log_dir=log_dir)  # Log sparsity and other metrics in Tensorboard.
+    log_callback.set_model(teacher_for_pruning)
 
     checkpoint_path = "./checkpoints/" + date + filePath
     ckpt = tf.train.Checkpoint(teacher__for_pruning=teacher_for_pruning,
@@ -105,7 +105,7 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         for train_x in full_range_set:
             step_callback.on_train_batch_begin(batch=unused_arg)
             train_step(teacher, teacher_for_pruning, train_x, 360, optimizer)
-            step_callback.on_train_batch_end(batch=unused_arg)
+        step_callback.on_epoch_end(batch=unused_arg)
 
         '''
         for train_p in partial_range_set:
