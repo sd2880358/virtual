@@ -104,7 +104,7 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         start_time = time.time()
         log_callback.on_epoch_begin(epoch=unused_arg)
         for train_x in full_range_set:
-            train_step(teacher, teacher_for_pruning, train_x, 360, optimizer)
+            train_step(train_x, 360, optimizer)
         step_callback.on_epoch_end(batch=unused_arg)
 
         '''
