@@ -102,15 +102,14 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
     for epoch in range(epochs):
         start_time = time.time()
         log_callback.on_epoch_begin(epoch=unused_arg)
+        '''
         for train_x in full_range_set:
             train_step(train_x, 360, optimizer)
-        step_callback.on_epoch_end(batch=unused_arg)
-
+        
         '''
         for train_p in partial_range_set:
-            train_step(model, train_p, 180, optimizer) 
-
-        '''
+            train_step(train_p, 180, optimizer)
+        step_callback.on_epoch_end(batch=unused_arg)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
@@ -120,15 +119,15 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                                                                 ckpt_save_path))
             for i in range(10, 360, 10):
                 d = np.radians(i)
-                r_x = rotate(train_x, d)
-                mean, logvar = teacher.encode(train_x)
+                r_x = rotate(partial_range_set, d)
+                mean, logvar = teacher.encode(partial_range_set)
                 z = teacher.reparameterize(mean, logvar)
                 r_mean, r_logvar = teacher.encode(r_x)
                 r_z = teacher.reparameterize(r_mean, r_logvar)
-                ori_loss = reconstruction_loss(teacher_for_pruning, z, train_x)
+                ori_loss = reconstruction_loss(teacher_for_pruning, z, partial_range_set)
                 rota_loss = reconstruction_loss(teacher_for_pruning, r_z, r_x)
-                ori_cross_l = ori_cross_loss(teacher_for_pruning, r_z, train_x, d, latent_dim=8)
-                rota_cross_l = rota_cross_loss(teacher_for_pruning, z, train_x, d, r_x, latent_dim=8)
+                ori_cross_l = ori_cross_loss(teacher_for_pruning, r_z, partial_range_set, d, latent_dim=8)
+                rota_cross_l = rota_cross_loss(teacher_for_pruning, z, partial_range_set, d, r_x, latent_dim=8)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
 
