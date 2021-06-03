@@ -89,7 +89,7 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(initial_sparsity=0.50,
                                                                  final_sparsity=0.80,
                                                                  begin_step=0,
-                                                                 end_step=100)
+                                                                 end_step=100 * epochs)
     }
     teacher_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model, **pruning_params)
       # run pruning callback
