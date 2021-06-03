@@ -53,7 +53,6 @@ def rotate_vector(vector, matrix):
 def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(teacher, model_for_pruning, train_x, degree_set, optimizer):
-        log_callback.on_epoch_begin(epoch=unused_arg)
         for i in range(10, degree_set, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
@@ -69,7 +68,6 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 grads = tape.gradient(total_loss, model_for_pruning.trainable_variables)
                 optimizer.apply_gradients(zip(grads, model_for_pruning.trainable_variables))
-        step_callback.on_epoch_end(batch=unused_arg)
     base_model = teacher.decoder
     model_for_pruning = tfmot.sparsity.keras.prune_low_magnitude(base_model)
 
@@ -104,7 +102,7 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
         print('Latest checkpoint restored!!')
     for epoch in range(epochs):
         start_time = time.time()
-
+        log_callback.on_epoch_begin(epoch=unused_arg)
         for train_x in full_range_set:
             train_step(teacher, teacher_for_pruning, train_x, 360, optimizer)
 
@@ -113,7 +111,7 @@ def start_train(epochs, teacher, full_range_set, partial_range_set, date, filePa
             train_step(model, train_p, 180, optimizer) 
 
         '''
-
+        step_callback.on_epoch_end(batch=unused_arg)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
