@@ -2,7 +2,7 @@ import tensorflow as tf
 from model import CVAE
 import numpy as np
 import tensorflow_model_optimization as tfmot
-from beta_VAE.dataset import preprocess_images, divide_dataset
+from dataset import preprocess_images, divide_dataset
 import tempfile
 import numpy as np
 from tensorflow.linalg import matvec
