@@ -46,4 +46,9 @@
 - 5/26 mode test9 full range digit 7, partial range digit 3 with training method(futher_dis) setting, ;
 - 5/31: 
     - mnist_test 12 full range digit [4,5,6], partial range digit 3;
-    - teacher_network full range digit 7, 
+    - teacher_network full range digit 7,
+- 6/6:
+    - training data:
+        -   full range: 7 [:100], parital range:9 [:100] 
+    - teacher_network, without bias vector
+    - student_network, 

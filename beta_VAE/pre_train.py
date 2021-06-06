@@ -223,7 +223,7 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
     date = '6_6/'
-    file_path = 'teacher_network/'
+    file_path = 'teacher_network2/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 
