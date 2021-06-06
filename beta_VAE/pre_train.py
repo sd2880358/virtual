@@ -170,7 +170,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for i in range(10, 360, 10):
+            for i in range(10, 370, 10):
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
                 ori_loss = compute_loss(model, test_sample)
@@ -210,9 +210,9 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
 
     full_range = mnist_images[np.where(mnist_labels == 7)][:100]
-    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
+    partial_range = mnist_images[np.where(mnist_labels == 3)][:100]
     num_examples_to_generate = 16
-    model = CVAE(latent_dim=8, beta=6, model="mlp", shape=[28, 28, 1])
+    model = CVAE(latent_dim=8, beta=6, model="without_bias", shape=[28, 28, 1])
     epochs = 800
 
     batch_size = 32
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .batch(batch_size))
 
-    date = '5_31/'
+    date = '6_6/'
     file_path = 'teacher_network/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 

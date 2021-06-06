@@ -69,6 +69,34 @@ class CVAE(tf.keras.Model):
                     1)
             ]
         )
+    elif (model == 'without_bias'):
+        self.encoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=shape),
+                tf.keras.layers.Dense(
+                    64, activation='relu', use_bias=False),
+                tf.keras.layers.Dense(
+                    32, activation='relu', use_bias=False),
+                tf.keras.layers.Flatten(),
+                # No activation
+                tf.keras.layers.Dense(latent_dim + latent_dim),
+            ]
+        )
+        self.decoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
+                tf.keras.layers.Dense(latent_dim * latent_dim, activation=tf.nn.relu, use_bias=False),
+                tf.keras.layers.Dense(
+                    512, activation='relu', use_bias=False),
+                tf.keras.layers.Dense(
+                    2352,
+                    activation='relu', use_bias=False),
+                # No activation
+                tf.keras.layers.Reshape(target_shape=[28, 28, 3]),
+                tf.keras.layers.Dense(
+                    1, use_bias=False)
+            ]
+        )
 
         assert self.decoder.output_shape == (None, 28, 28, 1)
     elif (model == 'raw'):
