@@ -50,5 +50,5 @@
 - 6/6:
     - training data:
         -   full range: 7 [:100], parital range:9 [:100] 
-    - teacher_network, without bias vector
-    - student_network, 
+    - teacher_network1, without bias vector (both decoder and encoder)
+    - teacher_network2, without bias (decoder) 
