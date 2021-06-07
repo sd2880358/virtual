@@ -52,3 +52,4 @@
         -   full range: 7 [:100], parital range:9 [:100] 
     - teacher_network1, without bias vector (both decoder and encoder)
     - teacher_network2, without bias (decoder) 
+    - student_network1, without bias (decoder)

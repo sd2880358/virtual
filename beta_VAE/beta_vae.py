@@ -110,7 +110,9 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(model, x, degree_set, optimizer):
-        for i in range(10, degree_set+10, 10):
+        s = degree_set[0]
+        e = degree_set[1]
+        for i in range(s, e, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
                 r_x = rotate(x, d)
@@ -136,11 +138,11 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         start_time = time.time()
 
         for train_x in full_range_set:
-            train_step(model, train_x, 360, optimizer)
+            train_step(model, train_x, [0, 180], optimizer)
 
 
         for train_p in partial_range_set:
-            train_step(model, train_p, 180, optimizer)
+            train_step(model, train_p, [180,360], optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
@@ -175,8 +177,8 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    full_range = mnist_images[np.where(np.isin(mnist_labels, [4, 5, 6]))]
-    partial_range = mnist_images[np.where(mnist_labels == 3)][100:200]
+    full_range = mnist_images[np.where(np.isin(mnist_labels, [3, 4]))]
+    partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 800
@@ -188,6 +190,6 @@ if __name__ == '__main__':
     partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .batch(batch_size))
 
-    date = '5_31/'
-    file_path = 'mnist_test13/'
+    date = '6_6/'
+    file_path = 'mnist_test14/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
