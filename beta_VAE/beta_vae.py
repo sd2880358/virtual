@@ -179,7 +179,7 @@ if __name__ == '__main__':
 
     partial_range = mnist_images[np.where(np.isin(mnist_labels, [1]))]
     #partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
-    tmp = np.zeros(shape=[1, 28, 28, 1])
+    tmp = np.zeros(shape=[1, 28, 28, 1]).astype('float32')
     tmp[:, :, 13] = 1
     full_range = tmp
     num_examples_to_generate = 16
