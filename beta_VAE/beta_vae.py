@@ -185,7 +185,7 @@ if __name__ == '__main__':
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 80
-
+    partial_range = np.concatenate([partial_range, full_range])
     batch_size = 32
 
     partial_range_digit = (tf.data.Dataset.from_tensor_slices([full_range, partial_range])

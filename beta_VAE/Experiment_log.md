@@ -59,3 +59,6 @@
     - full range digit 4, partial range:3
 - mnist_test15 (6_8)
     - with shuffle 
+    
+- mnist_test16 (6_8)
+    - full range (line); partial range 3
