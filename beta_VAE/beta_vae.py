@@ -188,7 +188,7 @@ if __name__ == '__main__':
     partial_range = np.concatenate([partial_range, full_range])
     batch_size = 32
 
-    partial_range_digit = (tf.data.Dataset.from_tensor_slices([full_range, partial_range])
+    partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .shuffle(len(full_range)).batch(batch_size))
     full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                          .batch(batch_size))
