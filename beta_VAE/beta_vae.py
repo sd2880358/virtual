@@ -181,15 +181,15 @@ if __name__ == '__main__':
     partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
-    epochs = 800
+    epochs = 80
 
     batch_size = 32
 
     full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
-                         .batch(batch_size))
+                         .shuffle(len(full_range)).batch(batch_size))
     partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .batch(batch_size))
 
-    date = '6_6/'
-    file_path = 'mnist_test14/'
+    date = '6_8/'
+    file_path = 'mnist_test15/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)

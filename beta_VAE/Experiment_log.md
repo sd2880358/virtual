@@ -53,3 +53,7 @@
     - teacher_network1, without bias vector (both decoder and encoder)
     - teacher_network2, without bias (decoder) 
     - student_network1, without bias (decoder)
+    
+- mnist_test14 (6/6):
+    - beta_tcvae model
+    - full range digit 4, partial range:3
