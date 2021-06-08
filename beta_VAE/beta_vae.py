@@ -137,11 +137,11 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     for epoch in range(epochs):
         start_time = time.time()
 
-        for train_x in full_range_set:
+        for train_x in partial_range_set:
             train_step(model, train_x, [0, 180], optimizer)
 
 
-        for train_p in partial_range_set:
+        for train_p in full_range_set:
             train_step(model, train_p, [180,360], optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
@@ -177,19 +177,22 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    full_range = mnist_images[np.where(np.isin(mnist_labels, [3, 4]))]
-    partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
+    partial_range = mnist_images[np.where(np.isin(mnist_labels, [1]))]
+    #partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
+    tmp = np.zeros(shape=[28, 28, 1])
+    tmp[:, 13] = 1
+    full_range = tmp
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 80
 
     batch_size = 32
 
-    full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
+    partial_range_digit = (tf.data.Dataset.from_tensor_slices([full_range, partial_range])
                          .shuffle(len(full_range)).batch(batch_size))
-    partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
+    full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                          .batch(batch_size))
 
     date = '6_8/'
-    file_path = 'mnist_test15/'
+    file_path = 'mnist_test16/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)

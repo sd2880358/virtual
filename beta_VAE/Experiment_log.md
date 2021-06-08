@@ -57,3 +57,5 @@
 - mnist_test14 (6/6):
     - beta_tcvae model
     - full range digit 4, partial range:3
+- mnist_test15 (6_8)
+    - with shuffle 
