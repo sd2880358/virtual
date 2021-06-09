@@ -155,11 +155,11 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         for train_x in full_range_set:
             train_step(model, train_x, 360, optimizer)
 
+        '''
         for train_p in partial_range_set:
             train_step(model, train_p, 180, optimizer) 
         
-
-
+        '''
 
 
         end_time = time.time()
@@ -208,11 +208,13 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    full_range = mnist_images[np.where(mnist_labels == 7)][:100]
+    tmp = np.zeros(shape=[1, 28, 28, 1]).astype('float32')
+    tmp[:, :, 13] = 1
+    full_range = tmp
     partial_range = mnist_images[np.where(mnist_labels == 3)][:100]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, model="without_bias", shape=[28, 28, 1])
-    epochs = 800
+    epochs = 8000
 
     batch_size = 32
 
@@ -221,8 +223,8 @@ if __name__ == '__main__':
     partial_range_digit = (tf.data.Dataset.from_tensor_slices(partial_range)
                          .batch(batch_size))
 
-    date = '6_6/'
-    file_path = 'student_network1/'
+    date = '6_9/'
+    file_path = 'teacher_network3/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 

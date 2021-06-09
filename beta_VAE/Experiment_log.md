@@ -61,4 +61,9 @@
     - with shuffle 
     
 - mnist_test16 (6_8)
+    - full range (line); partial range 1
+- mnist test17
     - full range (line); partial range 3
+    
+- 6/9:
+    - teacher_network3, line angle (0-360)
