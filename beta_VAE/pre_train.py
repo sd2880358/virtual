@@ -165,7 +165,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
-        if (epoch + 1)%1000 == 0:
+        if (epoch + 1)%100 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -214,7 +214,7 @@ if __name__ == '__main__':
     partial_range = mnist_images[np.where(mnist_labels == 3)][:100]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, model="without_bias", shape=[28, 28, 1])
-    epochs = 8000
+    epochs = 800
 
     batch_size = 32
 
