@@ -1,8 +1,8 @@
 import tensorflow as tf
-from beta_VAE.model import CVAE
+from model import CVAE
 import numpy as np
 import tensorflow_model_optimization as tfmot
-from beta_VAE.dataset import preprocess_images, divide_dataset
+from dataset import preprocess_images, divide_dataset
 import tempfile
 import numpy as np
 import matplotlib.pyplot as plt
