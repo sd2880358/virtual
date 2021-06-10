@@ -71,7 +71,9 @@ def restore_network(loc):
 def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(model, x, degree_set, optimizer):
-        for i in range(10, degree_set + 10, 10):
+        s = degree_set[0]
+        e = degree_set[1]
+        for i in range(s, e + 10, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
                 r_x = rotate(x, d)
@@ -95,9 +97,9 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     for epoch in range(epochs):
         for train_x in full_range_set:
-            train_step(merge_network, train_x, 360, optimizer)
+            train_step(merge_network, train_x, [0,360], optimizer)
         for train_p in partial_range_set:
-            train_step(merge_network, train_p, 180, optimizer)
+            train_step(merge_network, train_p, [0,0], optimizer)
 
         if (epoch+1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
@@ -106,10 +108,10 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
             for i in range(10, 370, 10):
                 d = np.radians(i)
                 r_x = rotate(test_sample, d)
-                ori_loss = compute_loss(model, test_sample)
-                rota_loss = reconstruction_loss(model, test_sample)
-                ori_cross_l = ori_cross_loss(model, test_sample, d, r_x)
-                rota_cross_l = rota_cross_loss(model, test_sample, d, r_x)
+                ori_loss = compute_loss(merge_network, test_sample)
+                rota_loss = reconstruction_loss(merge_network, test_sample)
+                ori_cross_l = ori_cross_loss(merge_network, test_sample, d, r_x)
+                rota_cross_l = rota_cross_loss(merge_network, test_sample, d, r_x)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
             elbo = -loss.result()
