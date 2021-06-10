@@ -83,6 +83,7 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./beta_VAE/checkpoints/"+ date + filePath
+
     ckpt = tf.train.Checkpoint(merge_network=merge_network,
                                optimizer=optimizer)
     ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
@@ -133,7 +134,7 @@ if __name__ == '__main__':
 
     teacher = restore_network("6_9/teacher_network3/ckpt-8")
     student = restore_network("6_9/student_network4/ckpt-8")
-    merge_network  = merge_network
+    merge_network  = merge_network(teacher, student)
     optimizer = tf.keras.optimizers.Adam(1e-4)
     date = '6_9/'
     file_path = 'merge_network2/'
