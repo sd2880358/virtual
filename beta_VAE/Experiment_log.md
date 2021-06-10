@@ -67,7 +67,7 @@
     
 - 6/9:
     - teacher_network3, line angle (0-360)
-    - student_network2, 3 (0-180)
+    - student_network3, 3 (0-180)
     - student_network4, 3 (0)
     - merge_network2, combine teacher network3 and student_network3 (*)
     - merge_network3, combine teacher network3 and student_network4 (*)
