@@ -135,12 +135,12 @@ if __name__ == '__main__':
     full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                         .batch(batch_size))
 
-    teacher = restore_network("6_9/teacher_network3/ckpt-8")
+    teacher = restore_network("6_9/teacher_network2/ckpt-8")
     student = restore_network("6_9/student_network4/ckpt-8")
     merge_network  = merge_network(teacher, student)
     optimizer = tf.keras.optimizers.Adam(1e-4)
     date = '6_9/'
-    file_path = 'merge_network4/'
+    file_path = 'merge_network2/'
     epochs = 30
     num_examples_to_generate = 16
 

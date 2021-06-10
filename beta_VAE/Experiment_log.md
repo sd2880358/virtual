@@ -73,5 +73,5 @@
     - merge_network3, combine teacher network3 and student_network4 (*)
     
 - 6/10:
-    - mnist_test18 full range (line) 0-360; partial range 0;
-    - mnist
+    - mnist_test18 full range (line) 0-360; partial range(3) 0;
+    - mnist_test19 full range (line) 0-360, partial range[3, 4, 5], (0-180)
