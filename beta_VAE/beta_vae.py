@@ -112,7 +112,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     def train_step(model, x, degree_set, optimizer):
         s = degree_set[0]
         e = degree_set[1]
-        for i in range(s, e, 10):
+        for i in range(s, e+10, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
                 r_x = rotate(x, d)
@@ -142,7 +142,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
 
 
         for train_p in full_range_set:
-            train_step(model, train_p, [0,360], optimizer)
+            train_step(model, train_p, [0, 360], optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
