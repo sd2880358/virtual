@@ -126,7 +126,9 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(model, x, degree_set, optimizer):
-        for i in range(10, degree_set + 10, 10):
+        s = degree_set[0]
+        e = degree_set[1]
+        for i in range(s, e + 10, 10):
             d = np.radians(i)
             with tf.GradientTape() as tape:
                 r_x = rotate(x, d)
@@ -157,7 +159,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
 
         '''
         for train_p in partial_range_set:
-            train_step(model, train_p, 180, optimizer) 
+            train_step(model, train_p, [0, 0], optimizer)
         
 
 
@@ -224,7 +226,7 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
     date = '6_9/'
-    file_path = 'student_network3/'
+    file_path = 'student_network4/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
 
 
