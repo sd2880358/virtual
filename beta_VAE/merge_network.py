@@ -1,16 +1,7 @@
 import tensorflow as tf
 from model import CVAE
-import numpy as np
-import tensorflow_model_optimization as tfmot
 from dataset import preprocess_images, divide_dataset
-import tempfile
 import numpy as np
-import matplotlib.pyplot as plt
-from tensorflow.linalg import matvec
-import os
-import imageio
-import glob
-import tensorflow_docs.vis.embed as embed
 from tensorflow_addons.image import rotate
 from loss import *
 
