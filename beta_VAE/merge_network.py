@@ -65,7 +65,7 @@ def merge_network(teacher, student):
 def restore_network(loc):
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1], model='without_bias')
     checkpoint = tf.train.Checkpoint(model=model)
-    checkpoint.restore("./beta_VAE/checkpoints/{}".format(loc))
+    checkpoint.restore("./checkpoints/{}".format(loc))
     return model
 
 def adjust_learn(epochs, model, full_range_set, partial_range_set, date, filePath):
