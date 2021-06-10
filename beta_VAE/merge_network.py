@@ -100,7 +100,7 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
             train_step(merge_network, train_p, [0,180], optimizer)
 
         for train_x in full_range_set:
-            train_step(merge_network, train_x, [0,360], optimizer)
+            train_step(merge_network, train_x, [180,360], optimizer)
 
         if (epoch+1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
