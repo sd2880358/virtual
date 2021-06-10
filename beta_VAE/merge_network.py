@@ -97,7 +97,7 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     for epoch in range(epochs):
         for train_p in partial_range_set:
-            train_step(merge_network, train_p, [0,0], optimizer)
+            train_step(merge_network, train_p, [0,180], optimizer)
 
         for train_x in full_range_set:
             train_step(merge_network, train_x, [0,360], optimizer)
