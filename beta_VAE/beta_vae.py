@@ -177,9 +177,9 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    partial_range = mnist_images[np.where(np.isin(mnist_labels, [3, 4, 5]))]
+    partial_range = mnist_images[np.where(np.isin(mnist_labels, [3]))]
     #partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
-    tmp = np.zeros(shape=[1, 28, 28, 1]).astype('float32')
+    tmp = np.zeros(shape=[10000, 28, 28, 1]).astype('float32')
     tmp[:, :, 13] = 1
     full_range = tmp
     num_examples_to_generate = 16
@@ -194,5 +194,5 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
     date = '6_10/'
-    file_path = 'mnist_test19/'
+    file_path = 'mnist_test20/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
