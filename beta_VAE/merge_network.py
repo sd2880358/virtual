@@ -68,7 +68,7 @@ def restore_network(loc):
     checkpoint.restore("./checkpoints/{}".format(loc))
     return model
 
-def adjust_learn(epochs, model, full_range_set, partial_range_set, date, filePath):
+def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(model, x, degree_set, optimizer):
         for i in range(10, degree_set + 10, 10):
