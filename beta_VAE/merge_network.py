@@ -84,7 +84,7 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    checkpoint_path = "./beta_VAE/checkpoints/"+ date + filePath
+    checkpoint_path = "./checkpoints/"+ date + filePath
 
     ckpt = tf.train.Checkpoint(merge_network=merge_network,
                                optimizer=optimizer)
@@ -96,12 +96,11 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
     for test_batch in partial_range_set.take(1):
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     for epoch in range(epochs):
-        for train_x in full_range_set:
-            train_step(merge_network, train_x, [0,360], optimizer)
-
-
         for train_p in partial_range_set:
             train_step(merge_network, train_p, [0,0], optimizer)
+
+        for train_x in full_range_set:
+            train_step(merge_network, train_x, [0,360], optimizer)
 
         if (epoch+1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
@@ -141,7 +140,7 @@ if __name__ == '__main__':
     merge_network  = merge_network(teacher, student)
     optimizer = tf.keras.optimizers.Adam(1e-4)
     date = '6_9/'
-    file_path = 'merge_network3/'
+    file_path = 'merge_network4/'
     epochs = 30
     num_examples_to_generate = 16
 
