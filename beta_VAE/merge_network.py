@@ -95,9 +95,9 @@ def adjust_learn(epochs, merge_network, full_range_set, partial_range_set, date,
         test_sample = test_batch[0:num_examples_to_generate, :, :, :]
     for epoch in range(epochs):
         for train_x in full_range_set:
-            train_step(model, train_x, 360, optimizer)
+            train_step(merge_network, train_x, 360, optimizer)
         for train_p in partial_range_set:
-            train_step(model, train_p, 180, optimizer)
+            train_step(merge_network, train_p, 180, optimizer)
 
         if (epoch+1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
