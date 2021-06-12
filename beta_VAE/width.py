@@ -97,7 +97,6 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 
 
-
 def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
     def train_step(model, x, degree_set, optimizer):
@@ -105,13 +104,17 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         e = degree_set[1]
         for i in range(s, e+1):
             with tf.GradientTape() as tape:
-                tmp[:, :, 13:13+i] = 1
-                full_test = tmp
                 ori_loss = compute_loss(model, x)
-                rota_loss = reconstruction_loss(model, full_test)
-                ori_cross_l = ori_cross_loss(model, x, i, full_test)
-                rota_cross_l = rota_cross_loss(model, x, i, full_test)
-                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
+                if (e > 0):
+                    tmp = np.zeros(shape=[batch_size, 28, 28, 1]).astype('float32')
+                    tmp[:, :, 13:13+i] = 1
+                    full_test = tmp
+                    rota_loss = reconstruction_loss(model, full_test)
+                    ori_cross_l = ori_cross_loss(model, x, i, full_test)
+                    rota_cross_l = rota_cross_loss(model, x, i, full_test)
+                    total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
+                else:
+                    total_loss = ori_loss
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
