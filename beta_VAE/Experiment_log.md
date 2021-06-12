@@ -75,4 +75,6 @@
 - 6/10:
     - mnist_test18 full range (line) 0-360; partial range(3) 0;
     - mnist_test19 full range (line) 0-360, partial range[3, 4, 5], (0-180)
-    - mnist_test20 full range (line, 10,000 sample), partial ranage (3) (0-180)
+    - mnist_test20 full range (line, 10,000 sample), partial range (3) (0-180)
+    - mnist_test21 full range(line, 10,000 sample), partial range(3, 0-180)
+        - training procedure: 1) train full range set individually; then, mix full range and partial range.

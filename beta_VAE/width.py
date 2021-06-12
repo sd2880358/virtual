@@ -57,7 +57,7 @@ def rota_cross_loss(model, x, d, r_x):
     c, s = np.cos(d), np.sin(d)
     latent = model.latent_dim
     r_m = np.identity(latent)
-    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
+
     mean, logvar = model.encode(x)
     z = model.reparameterize(mean, logvar)
     phi_z = rotate_vector(z, r_m)
@@ -112,7 +112,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     def train_step(model, x, degree_set, optimizer):
         s = degree_set[0]
         e = degree_set[1]
-        for i in range(s, e+10, 10):
+        for i in range(s, e+1):
             d = np.radians(i)
             with tf.GradientTape() as tape:
                 r_x = rotate(x, d)
@@ -138,10 +138,10 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         start_time = time.time()
 
         for train_p in full_range_set:
-            train_step(model, train_p, [180, 360], optimizer)
+            train_step(model, train_p, [0, 0], optimizer)
 
         for train_x in partial_range_set:
-            train_step(model, train_x, [0, 180], optimizer)
+            train_step(model, train_x, [0, 3], optimizer)
 
 
 
@@ -196,5 +196,5 @@ if __name__ == '__main__':
                          .batch(batch_size))
 
     date = '6_12/'
-    file_path = 'mnist_test21/'
+    file_path = 'mnist_width1/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
