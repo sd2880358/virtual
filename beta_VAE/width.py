@@ -146,13 +146,13 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
             generate_and_save_images(model, epochs, test_sample, file_path)
-            for i in range(10, 370, 10):
-                d = np.radians(i)
-                r_x = rotate(test_sample, d)
+            for i in range(0, 3):
+                tmp[:, :, 13:13 + i] = 1
+                full_test = tmp
                 ori_loss = compute_loss(model, test_sample)
-                rota_loss = reconstruction_loss(model, test_sample)
-                ori_cross_l = ori_cross_loss(model, test_sample, d, r_x)
-                rota_cross_l = rota_cross_loss(model, test_sample, d, r_x)
+                rota_loss = reconstruction_loss(model, full_test)
+                ori_cross_l = ori_cross_loss(model, test_sample, i, full_test)
+                rota_cross_l = rota_cross_loss(model, test_sample, i, full_test)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
             elbo = -loss.result()
