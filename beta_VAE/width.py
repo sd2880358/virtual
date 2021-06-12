@@ -108,7 +108,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                 if (e > 0):
                     width = i + 1
                     tmp = np.zeros(shape=[x.shape[0], 28, 28, 1]).astype('float32')
-                    tmp[:, :, 13:width] = 1
+                    tmp[:, :, 13:13+width] = 1
                     full_test = tmp
                     rota_loss = reconstruction_loss(model, full_test)
                     ori_cross_l = ori_cross_loss(model, x, width, full_test)
@@ -154,7 +154,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             for i in range(0, 3):
                 width = i + 1
                 tmp = np.zeros([16, 28, 28, 1]).astype('float32')
-                tmp[:, :, 13: width] = 1
+                tmp[:, :, 13: 13 + width] = 1
                 full_test = tmp
                 ori_loss = compute_loss(model, test_sample)
                 rota_loss = reconstruction_loss(model, full_test)
