@@ -152,13 +152,14 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                                                         ckpt_save_path))
             generate_and_save_images(model, epochs, test_sample, file_path)
             for i in range(0, 3):
+                width = i + 1
                 tmp = np.zeros([16, 28, 28, 1]).astype('float32')
-                tmp[:, :, 13:13 + 1 + i] = 1
+                tmp[:, :, 13: width] = 1
                 full_test = tmp
                 ori_loss = compute_loss(model, test_sample)
                 rota_loss = reconstruction_loss(model, full_test)
-                ori_cross_l = ori_cross_loss(model, test_sample, i, full_test)
-                rota_cross_l = rota_cross_loss(model, test_sample, i, full_test)
+                ori_cross_l = ori_cross_loss(model, test_sample, width, full_test)
+                rota_cross_l = rota_cross_loss(model, test_sample, width, full_test)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
             elbo = -loss.result()
