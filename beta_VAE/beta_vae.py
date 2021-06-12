@@ -137,14 +137,12 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     for epoch in range(epochs):
         start_time = time.time()
 
-        for train_p in full_range_set:
-            train_step(model, train_p, [180, 360], optimizer)
-
         for train_x in partial_range_set:
             train_step(model, train_x, [0, 180], optimizer)
 
 
-
+        for train_p in full_range_set:
+            train_step(model, train_p, [180, 360], optimizer)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
@@ -181,7 +179,7 @@ if __name__ == '__main__':
 
     partial_range = mnist_images[np.where(np.isin(mnist_labels, [3]))]
     #partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
-    tmp = np.zeros(shape=[10000, 28, 28, 1]).astype('float32')
+    tmp = np.zeros(shape=[1000, 28, 28, 1]).astype('float32')
     tmp[:, :, 13] = 1
     full_range = tmp
     num_examples_to_generate = 16
@@ -195,6 +193,6 @@ if __name__ == '__main__':
     full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                          .batch(batch_size))
 
-    date = '6_12/'
-    file_path = 'mnist_test21/'
+    date = '6_10/'
+    file_path = 'mnist_test20/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
