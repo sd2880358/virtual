@@ -54,7 +54,6 @@ def rota_cross_loss(model, x, w, r_x):
     z = model.reparameterize(mean, logvar)
     w_z = z * w
     phi_x = model.decode(w_z)
-
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
 
@@ -109,9 +108,9 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                 tmp[:, :, 13:13+i] = 1
                 full_test = tmp
                 ori_loss = compute_loss(model, x)
-                rota_loss = reconstruction_loss(model, r_x)
-                ori_cross_l = ori_cross_loss(model, x, d, r_x)
-                rota_cross_l = rota_cross_loss(model, x, d, r_x)
+                rota_loss = reconstruction_loss(model, full_test)
+                ori_cross_l = ori_cross_loss(model, x, d, full_test)
+                rota_cross_l = rota_cross_loss(model, x, d, full_test)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
