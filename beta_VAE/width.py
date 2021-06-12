@@ -38,30 +38,22 @@ def rotate_vector(vector, matrix):
     return test
 
 
-def ori_cross_loss(model, x, d, r_x):
+def ori_cross_loss(model, x, w, r_x):
     mean, logvar = model.encode(r_x)
-    r_z = model.reparameterize(mean, logvar)
-    c, s = np.cos(d), np.sin(d)
-    latent = model.latent_dim
-    r_m = np.identity(latent)
-    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, -s], [s, c]
-    phi_z = rotate_vector(r_z, r_m)
-    phi_x = model.decode(phi_z)
+    w_z = model.reparameterize(mean, logvar)
+    z = w_z/w
+    phi_x = model.decode(z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
 
     return -tf.reduce_mean(logx_z)
 
 
-def rota_cross_loss(model, x, d, r_x):
-    c, s = np.cos(d), np.sin(d)
-    latent = model.latent_dim
-    r_m = np.identity(latent)
-
+def rota_cross_loss(model, x, w, r_x):
     mean, logvar = model.encode(x)
     z = model.reparameterize(mean, logvar)
-    phi_z = rotate_vector(z, r_m)
-    phi_x = model.decode(phi_z)
+    w_z = z * w
+    phi_x = model.decode(w_z)
 
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
@@ -113,9 +105,9 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         s = degree_set[0]
         e = degree_set[1]
         for i in range(s, e+1):
-            d = np.radians(i)
             with tf.GradientTape() as tape:
-                r_x = rotate(x, d)
+                tmp[:, :, 13:13+i] = 1
+                full_test = tmp
                 ori_loss = compute_loss(model, x)
                 rota_loss = reconstruction_loss(model, r_x)
                 ori_cross_l = ori_cross_loss(model, x, d, r_x)
@@ -149,7 +141,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
         loss = tf.keras.metrics.Mean()
 
 
-        #generate_and_save_images(model, epochs, r_sample, "rotate_image")
+        generate_and_save_images(model, epochs, test_sample, "rotate_image")
         if (epoch + 1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
@@ -179,9 +171,9 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (_, _) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
 
-    partial_range = mnist_images[np.where(np.isin(mnist_labels, [3]))]
+    partial_range = mnist_images[np.where(np.isin(mnist_labels, [1]))]
     #partial_range = mnist_images[np.where(np.isin(mnist_labels, [4]))]
-    tmp = np.zeros(shape=[10000, 28, 28, 1]).astype('float32')
+    tmp = np.zeros(shape=[1000, 28, 28, 1]).astype('float32')
     tmp[:, :, 13] = 1
     full_range = tmp
     num_examples_to_generate = 16
