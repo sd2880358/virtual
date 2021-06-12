@@ -193,6 +193,6 @@ if __name__ == '__main__':
     full_range_digit = (tf.data.Dataset.from_tensor_slices(full_range)
                          .batch(batch_size))
 
-    date = '6_10/'
-    file_path = 'mnist_test20/'
+    date = '6_12/'
+    file_path = 'mnist_test21/'
     start_train(epochs, model, full_range_digit, partial_range_digit, date, file_path)
