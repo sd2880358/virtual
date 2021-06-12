@@ -106,7 +106,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             with tf.GradientTape() as tape:
                 ori_loss = compute_loss(model, x)
                 if (e > 0):
-                    tmp = np.zeros(shape=[batch_size, 28, 28, 1]).astype('float32')
+                    tmp = np.zeros(shape=[x.shape[0], 28, 28, 1]).astype('float32')
                     tmp[:, :, 13:13+i] = 1
                     full_test = tmp
                     rota_loss = reconstruction_loss(model, full_test)
