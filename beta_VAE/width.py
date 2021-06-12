@@ -112,7 +112,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                     rota_loss = reconstruction_loss(model, full_test)
                     ori_cross_l = ori_cross_loss(model, x, i, full_test)
                     rota_cross_l = rota_cross_loss(model, x, i, full_test)
-                    total_loss = ori_loss
+                    total_loss = rota_cross_l + rota_loss + ori_cross_l
                 else:
                     total_loss = ori_loss
             gradients = tape.gradient(total_loss, model.trainable_variables)
@@ -151,7 +151,8 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
                                                         ckpt_save_path))
             generate_and_save_images(model, epochs, test_sample, file_path)
             for i in range(0, 3):
-                tmp[:, :, 13:13 + i] = 1
+                tmp = np.zeros([16, 28, 28, 1]).astype('float32')
+                tmp[:, :, 13:13 + 1 + i] = 1
                 full_test = tmp
                 ori_loss = compute_loss(model, test_sample)
                 rota_loss = reconstruction_loss(model, full_test)
