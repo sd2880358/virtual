@@ -246,7 +246,7 @@ if __name__ == '__main__':
                     .batch(80))
 
     date = '6_14/'
-    file_path = 'sprite_size4'
+    file_path = 'sprite_size5'
     start_train(epochs, model, full_dataset, partial_dataset, full, partial, date, file_path)
 
 
