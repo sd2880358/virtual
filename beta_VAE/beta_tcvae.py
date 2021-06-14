@@ -154,7 +154,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, full, partial,
         start_time = time.time()
 
         for train_x in full_range_set:
-            train_step(model, train_x, [0, 4], optimizer, full)
+            train_step(model, train_x, [1, 4], optimizer, full)
 
         for train_p in partial_range_set:
             train_step(model, train_p, [0,1], optimizer, partial)
