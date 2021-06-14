@@ -93,4 +93,6 @@
                                                  (latents_classes['y_axis'] == 15))].index
     ```
     
-    - dsprite test1 reverse training process
+    - dsprite test2 reverse training process
+    
+    - dsprite test3 change shape (full range 1, partial range 0)

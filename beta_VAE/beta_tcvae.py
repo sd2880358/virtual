@@ -214,12 +214,12 @@ if __name__ == '__main__':
     partial = []
     test_set = []
     for i in range(5):
-        full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
+        full_index = latents_classes.loc[((latents_classes['shape'] == 1) &
                                           (latents_classes['scale'] == i) &
                                           (latents_classes['x_axis'] == 15) &
                                           (latents_classes['y_axis'] == 15))].index
         full.append(full_index)
-        partial_index = latents_classes.loc[((latents_classes['shape'] == 1) &
+        partial_index = latents_classes.loc[((latents_classes['shape'] == 0) &
                                                  (latents_classes['scale'] == i) &
                                                  (latents_classes['x_axis'] == 15) &
                                                  (latents_classes['y_axis'] == 15))].index
@@ -245,7 +245,7 @@ if __name__ == '__main__':
                     .batch(80))
 
     date = '6_13/'
-    file_path = 'sprite_size2'
+    file_path = 'sprite_size3'
     start_train(epochs, model, full_dataset, partial_dataset, full, partial, date, file_path)
 
 
