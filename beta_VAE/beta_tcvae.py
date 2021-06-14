@@ -129,7 +129,6 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 
 def start_train(epochs, model, full_range_set, partial_range_set, full, partial, date, filePath):
-    @tf.function
     def train_step(model, x, degree_set, optimizer, sample_index):
         s = degree_set[0]
         e = degree_set[1]
