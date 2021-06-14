@@ -215,7 +215,7 @@ if __name__ == '__main__':
     partial = []
     test_set = []
     for i in range(5):
-        full_index = latents_classes.loc[((latents_classes['shape'] == 1) &
+        full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
                                           (latents_classes['scale'] == i) &
                                           (latents_classes['x_axis'] == 15) &
                                           (latents_classes['y_axis'] == 15))].index
