@@ -79,21 +79,26 @@ def ori_cross_loss(model, x, d, r_x):
     return -tf.reduce_mean(logx_z)
 
 
-def rota_cross_loss(model, x, d, r_x):
-    c, s = np.cos(d), np.sin(d)
-    latent = model.latent_dim
-    r_m = np.identity(latent)
-    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
-    mean, logvar = model.encode(x)
-    z = model.reparameterize(mean, logvar)
-    phi_z = rotate_vector(z, r_m)
-    phi_x = model.decode(phi_z)
-
-    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
+def ori_cross_loss(model, x, w, r_x):
+    mean, logvar = model.encode(r_x)
+    w_z = model.reparameterize(mean, logvar)
+    z = w_z/w
+    phi_x = model.decode(z)
+    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
 
     return -tf.reduce_mean(logx_z)
 
+
+def rota_cross_loss(model, x, w, r_x):
+    mean, logvar = model.encode(x)
+    z = model.reparameterize(mean, logvar)
+    w_z = z * w
+    phi_x = model.decode(w_z)
+    cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
+    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
+
+    return -tf.reduce_mean(logx_z)
 
 def reconstruction_loss(model, X):
     mean, logvar = model.encode(X)
@@ -125,16 +130,16 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
     @tf.function
-    def train_step(model, x, degree_set, optimizer):
-        for i in range(10, degree_set + 10, 10):
-            d = np.radians(i)
+    def train_step(model, x, degree_set, optimizer, sample_index):
+        s = degree_set[0]
+        e = degree_set[1]
+        for size in range(s+1, e+1):
+            sample_set = imgs[sample_index[size]]
             with tf.GradientTape() as tape:
-                r_x = rotate(x, d)
-                ori_loss = compute_loss(model, x)
-                rota_loss = reconstruction_loss(model, r_x)
-                ori_cross_l = ori_cross_loss(model, x, d, r_x)
-                rota_cross_l = rota_cross_loss(model, x, d, r_x)
-                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
+                rota_loss = reconstruction_loss(model, sample_set)
+                ori_cross_l = ori_cross_loss(model, x, size, sample_set)
+                rota_cross_l = rota_cross_loss(model, x, size, sample_set)
+                total_loss = ori_loss + rota_cross_l + ori_cross_l + rota_loss
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
@@ -144,19 +149,16 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
     if ckpt_manager.latest_checkpoint:
         ckpt.restore(ckpt_manager.latest_checkpoint)
         print('Latest checkpoint restored!!')
-    for test_batch in partial_range_set.take(1):
-        test_sample = test_batch[0:num_examples_to_generate, :, :, :]
-    #generate_and_save_images(model, 0, test_sample, file_path)
     display.clear_output(wait=False)
     for epoch in range(epochs):
         start_time = time.time()
 
         for train_x in full_range_set:
-            train_step(model, train_x, 360, optimizer)
+            train_step(model, train_x, [0, 4], optimizer, full)
 
 
         for train_p in partial_range_set:
-            train_step(model, train_p, 180, optimizer)
+            train_step(model, train_p, [0,1], optimizer, partial)
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
@@ -164,13 +166,13 @@ def start_train(epochs, model, full_range_set, partial_range_set, date, filePath
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for i in range(10, 370, 10):
-                d = np.radians(i)
-                r_x = rotate(test_sample, d)
+
+            for size in range(1, 5):
+                w_sample = imgs[test_set[size]]
                 ori_loss = compute_loss(model, test_sample)
                 rota_loss = reconstruction_loss(model, test_sample)
-                ori_cross_l = ori_cross_loss(model, test_sample, d, r_x)
-                rota_cross_l = rota_cross_loss(model, test_sample, d, r_x)
+                ori_cross_l = ori_cross_loss(model, test_sample, size, w_sample)
+                rota_cross_l = rota_cross_loss(model, test_sample, size, w_sample)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 loss(total_loss)
 
@@ -209,33 +211,42 @@ if __name__ == '__main__':
     latents_classes = dataset_zip['latents_classes']
     latents_classes = pd.DataFrame(latents_classes)
     latents_classes.columns = ["color", "shape", "scale", "orientation", "x_axis", "y_axis"]
-    full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
-                                        (latents_classes['scale'] == 4) &
-                                        (latents_classes['x_axis'] == 0) &
-                                        (latents_classes['y_axis'] == 0))].index
+    full = []
+    partial = []
+    test_set = []
+    for i in range(5):
+        full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
+                                          (latents_classes['scale'] == i) &
+                                          (latents_classes['x_axis'] == 15) &
+                                          (latents_classes['y_axis'] == 15))].index
+        full.append(full_index)
+        partial_index = latents_classes.loc[((latents_classes['shape'] == 1) &
+                                                 (latents_classes['scale'] == i) &
+                                                 (latents_classes['x_axis'] == 15) &
+                                                 (latents_classes['y_axis'] == 15))].index
+        test_set.append(partial_index)
+    if (i < 2):
+            partial.append(partial_index.append(full_index))
 
-    partial_index = latents_classes.loc[((latents_classes['shape'] == 2) &
-                                        (latents_classes['scale'] == 4) &
-                                        (latents_classes['x_axis'] == 31) &
-                                        (latents_classes['y_axis'] == 31))].index
-    train_images = imgs[full_index][0:1]
-    test_images = imgs[partial_index][0:1]
-
+    full = pd.DataFrame(full).T.sample(frac=1)
+    partial = pd.DataFrame(partial).T.sample(frac=1)
+    full_images = imgs[full[0]]
+    partial_images = imgs[partial[0]]
+    test_sample = imgs[test_set[0]]
     latent_dim = 8
     num_examples_to_generate = 16
-    test_size = 10
     random_vector_for_generation = tf.random.normal(
         shape=[num_examples_to_generate, latent_dim])
-    epochs = 3000
+    epochs = 300
     model = CVAE(latent_dim=latent_dim, beta=4, shape=[64, 64, 1])
-    batch_size = 1
-    full_dataset = (tf.data.Dataset.from_tensor_slices(train_images)
+    batch_size = 40
+    full_dataset = (tf.data.Dataset.from_tensor_slices(full_images)
                      .batch(batch_size))
-    partial_dataset = (tf.data.Dataset.from_tensor_slices(test_images)
+    partial_dataset = (tf.data.Dataset.from_tensor_slices(partial_images)
                     .batch(batch_size))
 
-    date = '5_10/'
-    file_path = 'dSprites_location/'
-    start_train(epochs, model, full_dataset, partial_dataset, date, file_path)
+    date = '6_13/'
+    file_path = 'sprite_size'
+    start_train(epochs, model, full_dataset, partial_dataset, full, partial, date, file_path)
 
 
