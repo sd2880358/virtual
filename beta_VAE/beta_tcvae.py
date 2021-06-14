@@ -128,7 +128,7 @@ def generate_and_save_images(model, epoch, test_sample, file_path):
 
 
 
-def start_train(epochs, model, full_range_set, partial_range_set, date, filePath):
+def start_train(epochs, model, full_range_set, partial_range_set, full, partial, date, filePath):
     @tf.function
     def train_step(model, x, degree_set, optimizer, sample_index):
         s = degree_set[0]
@@ -203,8 +203,6 @@ def calculate_fid(real, fake):
 
 if __name__ == '__main__':
     dataset_zip = np.load('../dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
-
-    print('Keys in the dataset:', dataset_zip.keys())
     imgs = dataset_zip['imgs']
     imgs = np.reshape(imgs, [len(imgs), 64, 64, 1]).astype('float32')
     latents_values = dataset_zip['latents_values']
