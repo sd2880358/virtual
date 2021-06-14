@@ -153,12 +153,13 @@ def start_train(epochs, model, full_range_set, partial_range_set, full, partial,
     for epoch in range(epochs):
         start_time = time.time()
 
+        for train_x in full_range_set:
+            train_step(model, train_x, [0, 4], optimizer, full)
 
         for train_p in partial_range_set:
             train_step(model, train_p, [0,1], optimizer, partial)
 
-        for train_x in full_range_set:
-            train_step(model, train_x, [0, 4], optimizer, full)
+
 
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
@@ -244,8 +245,8 @@ if __name__ == '__main__':
     partial_dataset = (tf.data.Dataset.from_tensor_slices(partial_images)
                     .batch(80))
 
-    date = '6_13/'
-    file_path = 'sprite_size3'
+    date = '6_14/'
+    file_path = 'sprite_size4'
     start_train(epochs, model, full_dataset, partial_dataset, full, partial, date, file_path)
 
 

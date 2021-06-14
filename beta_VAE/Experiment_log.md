@@ -95,4 +95,6 @@
     
     - dsprite test2 reverse training process
     
-    - dsprite test3 change shape (full range 1, partial range 0)
+    - dsprite test3 (reverse training process) change shape (full range 1, partial range 0)
+    
+    - dsprite test 4 shape (full range 1, partial range 0)
