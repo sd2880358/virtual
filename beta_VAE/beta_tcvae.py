@@ -135,6 +135,7 @@ def start_train(epochs, model, full_range_set, partial_range_set, full, partial,
         for size in range(s+1, e+1):
             sample_set = imgs[sample_index[size]]
             with tf.GradientTape() as tape:
+                ori_loss = compute_loss(model, test_sample)
                 rota_loss = reconstruction_loss(model, sample_set)
                 ori_cross_l = ori_cross_loss(model, x, size, sample_set)
                 rota_cross_l = rota_cross_loss(model, x, size, sample_set)
