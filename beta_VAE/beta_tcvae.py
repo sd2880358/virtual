@@ -153,12 +153,13 @@ def start_train(epochs, model, full_range_set, partial_range_set, full, partial,
     for epoch in range(epochs):
         start_time = time.time()
 
-        for train_x in full_range_set:
-            train_step(model, train_x, [0, 4], optimizer, full)
-
 
         for train_p in partial_range_set:
             train_step(model, train_p, [0,1], optimizer, partial)
+
+        for train_x in full_range_set:
+            train_step(model, train_x, [0, 4], optimizer, full)
+
         end_time = time.time()
         loss = tf.keras.metrics.Mean()
 
@@ -235,7 +236,7 @@ if __name__ == '__main__':
     num_examples_to_generate = 16
     random_vector_for_generation = tf.random.normal(
         shape=[num_examples_to_generate, latent_dim])
-    epochs = 300
+    epochs = 600
     model = CVAE(latent_dim=latent_dim, beta=4, shape=[64, 64, 1])
     batch_size = 40
     full_dataset = (tf.data.Dataset.from_tensor_slices(full_images)
@@ -244,7 +245,7 @@ if __name__ == '__main__':
                     .batch(80))
 
     date = '6_13/'
-    file_path = 'sprite_size'
+    file_path = 'sprite_size2'
     start_train(epochs, model, full_dataset, partial_dataset, full, partial, date, file_path)
 
 

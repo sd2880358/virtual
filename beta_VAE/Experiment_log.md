@@ -82,7 +82,7 @@
     - width_test1  full range(line, 1,000 sample, width 0-3) partial range (1, 0)
 
 -6/13
-    - dsprite test
+    - dsprite test1
     
     ```         full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
                                           (latents_classes['x_axis'] == 15) &
@@ -92,3 +92,5 @@
                                                  (latents_classes['x_axis'] == 15) &
                                                  (latents_classes['y_axis'] == 15))].index
     ```
+    
+    - dsprite test1 reverse training process
