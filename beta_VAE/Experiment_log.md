@@ -80,3 +80,15 @@
     - mnist_test21 full range(line, 1,000 sample), partial range(3, 0-180)
         - training procedure: 1) train full range set individually; then, mix full range and partial range.
     - width_test1  full range(line, 1,000 sample, width 0-3) partial range (1, 0)
+
+-6/13
+    - dsprite test
+    
+    ```         full_index = latents_classes.loc[((latents_classes['shape'] == 2) &
+                                          (latents_classes['x_axis'] == 15) &
+                                          (latents_classes['y_axis'] == 15))].index
+        full.append(full_index)
+        partial_index = latents_classes.loc[((latents_classes['shape'] == 1) &
+                                                 (latents_classes['x_axis'] == 15) &
+                                                 (latents_classes['y_axis'] == 15))].index
+    ```

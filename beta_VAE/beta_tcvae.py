@@ -225,8 +225,8 @@ if __name__ == '__main__':
                                                  (latents_classes['x_axis'] == 15) &
                                                  (latents_classes['y_axis'] == 15))].index
         test_set.append(partial_index)
-    if (i < 2):
-            partial.append(partial_index.append(full_index))
+        if (i < 2):
+                partial.append(partial_index.append(full_index))
 
     full = pd.DataFrame(full).T.sample(frac=1)
     partial = pd.DataFrame(partial).T.sample(frac=1)
