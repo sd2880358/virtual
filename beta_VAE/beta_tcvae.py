@@ -241,7 +241,7 @@ if __name__ == '__main__':
     full_dataset = (tf.data.Dataset.from_tensor_slices(full_images)
                      .batch(batch_size))
     partial_dataset = (tf.data.Dataset.from_tensor_slices(partial_images)
-                    .batch(batch_size))
+                    .batch(80))
 
     date = '6_13/'
     file_path = 'sprite_size'
