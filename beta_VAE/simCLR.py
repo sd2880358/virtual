@@ -63,7 +63,7 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
                                                         ckpt_save_path))
             logits = model.projection(test_set[0])
             loss_t = compute_loss(model, test_set[0], test_set[1])
-            pred = logits.argmax(-1)
+            pred = logits.numpy().argmax(-1)
             correct = np.sum(pred == test_labels)
             print('Epoch: {}, Test set loss: {}, accuracy: {}, time elapse for current epoch: {}'
                   .format(epoch+1, loss_t, correct/float(len(test_labels)), end_time - start_time))
