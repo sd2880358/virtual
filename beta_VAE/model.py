@@ -253,7 +253,7 @@ class S_Decoder(tf.keras.Model):
 
 
 class SIM_CLR(tf.keras.Model):
-    def __init__ (self, shape=[28,28,1], represent_dims=8, num_classes=10):
+    def __init__ (self, shape=[28,28,1], represent_dims=8, num_cls=10):
         super(SIM_CLR, self).__init__()
         self.shape = shape
         self.factor_dims = represent_dims
@@ -272,7 +272,7 @@ class SIM_CLR(tf.keras.Model):
         self.projection_head = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(represent_dims),
-                tf.keras.layers.Dense(num_classes, use_bias=False)
+                tf.keras.layers.Dense(num_cls, use_bias=False)
             ]
         )
     def encode(self, X):

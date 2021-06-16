@@ -18,7 +18,7 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 
 def compute_loss(model, x, y):
-    classes = model.cls_dims
+    classes = model.num_cls
     logit_y = model.projection(x)
     loss_t = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
         labels = tf.one_hot(y, classes), logits=logit_y
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     digits_list = [3, 4]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
-    epochs = 80
+    epochs = 50
     batch_size = 32
     sim_clr = SIM_CLR()
     train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
