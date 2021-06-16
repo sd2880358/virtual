@@ -250,3 +250,35 @@ class S_Decoder(tf.keras.Model):
 
     def sample(self, x, factor):
         return self.decode(x, factor, apply_sigmoid=True)
+
+
+class SIM_CLR(tf.keras.Model):
+    def __init__ (self, shape=[28,28,1], represent_dims=8, num_classes=10):
+        super(SIM_CLR, self).__init__()
+        self.shape = shape
+        self.factor_dims = represent_dims
+        self.encoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=shape),
+                tf.keras.layers.Conv2D(
+                    filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
+                tf.keras.layers.Conv2D(
+                    filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
+                tf.keras.layers.Flatten(),
+                # No activation
+                tf.keras.layers.Dense(represent_dims),
+            ]
+        )
+        self.projection_head = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(represent_dims),
+                tf.keras.layers.Dense(num_classes, use_bias=False, use_bn=True)
+            ]
+        )
+    def encode(self, X):
+        return self.encoder(X)
+
+    def projection(self, X):
+        h = self.encode(X)
+        z = self.projection(h)
+        return z
