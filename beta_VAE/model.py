@@ -281,5 +281,5 @@ class SIM_CLR(tf.keras.Model):
 
     def projection(self, X):
         h = self.encode(X)
-        z = self.projection(h)
+        z = self.projection_head(h)
         return z

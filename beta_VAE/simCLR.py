@@ -19,29 +19,13 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 def compute_loss(model, x, y):
     classes = model.num_cls
-    logit_y = model.projection(x)
-    loss_t = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-        labels = tf.one_hot(y, classes), logits=logit_y
+    z = model.projection(x)
+    labels = tf.one_hot(y, classes)
+    loss_t = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+        labels=labels, logits=z
     ))
 
     return loss_t
-
-
-def generate_and_save_images(model, epoch, test_sample, file_path):
-    mean, logvar = model.encode(test_sample)
-    z = model.reparameterize(mean, logvar)
-    predictions = model.sample(z)
-    fig = plt.figure(figsize=(4, 4))
-
-    for i in range(predictions.shape[0]):
-        plt.subplot(4, 4, i + 1)
-        plt.imshow(predictions[i, :, :, 0], cmap='gray')
-        plt.axis('off')
-    file_dir = './image/' + date + file_path
-    if not os.path.exists(file_dir):
-        os.makedirs(file_dir)
-    plt.savefig(file_dir +'/image_at_epoch_{:04d}.png'.format(epoch))
-    plt.close()
 
 
 
@@ -77,11 +61,12 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            logits = compute_loss(model, test_set[0], test_set[1])
+            logits = model.projection(test_set[0])
+            loss_t = compute_loss(model, test_set[0], test_set[1])
             pred = logits.argmax(-1)
             correct = np.sum(pred == test_labels)
             print('Epoch: {}, Test set loss: {}, accuracy: {}, time elapse for current epoch: {}'
-                  .format(epoch+1, logits, correct/float(len(test_labels)), end_time - start_time))
+                  .format(epoch+1, loss_t, correct/float(len(test_labels)), end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
@@ -121,7 +106,7 @@ if __name__ == '__main__':
     train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
             .shuffle(len(mnist_images), seed=1).batch(batch_size))
 
-    train_labels = (tf.data.Dataset.from_tensor_slices(mnist_images)
+    train_labels = (tf.data.Dataset.from_tensor_slices(mnist_labels)
                     .shuffle(len(mnist_labels), seed=1).batch(batch_size))
 
 
