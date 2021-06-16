@@ -66,7 +66,7 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
 
         start_time = time.time()
 
-        for x, y in tf.data.Dataset.zip([train_set[0], train_set[1]]):
+        for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
             train_step(model, x, y, optimizer)
 
         end_time = time.time()
