@@ -272,7 +272,7 @@ class SIM_CLR(tf.keras.Model):
         self.projection_head = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(represent_dims),
-                tf.keras.layers.Dense(num_classes, use_bias=False, use_bn=True)
+                tf.keras.layers.Dense(num_classes, use_bias=False)
             ]
         )
     def encode(self, X):
