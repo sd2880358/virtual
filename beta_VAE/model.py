@@ -253,12 +253,12 @@ class S_Decoder(tf.keras.Model):
 
 
 class SIM_CLR(tf.keras.Model):
-    def __init__ (self, shape=[28,28,1], beta=4, represent_dims=8, num_cls=10):
+    def __init__ (self, shape=[28,28,1], beta=4, latent_dims=8, num_cls=10):
         super(SIM_CLR, self).__init__()
         self.beta = beta
         self.shape = shape
         self.num_cls = num_cls
-        self.factor_dims = represent_dims
+        self.factor_dims = latent_dims
         self.output_f = int(shape[0] / 4)
         self.output_s = shape[2]
         self.encoder = tf.keras.Sequential(
@@ -270,19 +270,19 @@ class SIM_CLR(tf.keras.Model):
                     filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
                 tf.keras.layers.Flatten(),
                 # No activation
-                tf.keras.layers.Dense(represent_dims + represent_dims),
+                tf.keras.layers.Dense(latent_dims + latent_dims),
             ]
         )
         self.projection_head = tf.keras.Sequential(
             [
-                tf.keras.layers.InputLayer(represent_dims),
+                tf.keras.layers.InputLayer(latent_dims),
                 tf.keras.layers.Dense(num_cls, use_bias=False)
             ]
         )
 
         self.decoder = tf.keras.Sequential(
             [
-                tf.keras.layers.InputLayer(input_shape=(represent_dims,)),
+                tf.keras.layers.InputLayer(input_shape=(latent_dims,)),
                 tf.keras.layers.Dense(units=self.output_f * self.output_f * 32, activation=tf.nn.relu),
                 tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
                 tf.keras.layers.Conv2DTranspose(
@@ -306,7 +306,7 @@ class SIM_CLR(tf.keras.Model):
         mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
         return mean, logvar
 
-    def reparameterize(self, mean, logvar, id=False):
+    def reparameterize(self, mean, logvar):
         eps = tf.random.normal(shape=mean.shape)
         z = eps * tf.exp(logvar * .5) + mean
         return z
