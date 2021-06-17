@@ -258,7 +258,7 @@ class SIM_CLR(tf.keras.Model):
         self.beta = beta
         self.shape = shape
         self.num_cls = num_cls
-        self.factor_dims = latent_dims
+        self.latent_dims = latent_dims
         self.output_f = int(shape[0] / 4)
         self.output_s = shape[2]
         self.encoder = tf.keras.Sequential(
