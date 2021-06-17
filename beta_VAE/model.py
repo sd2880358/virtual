@@ -267,7 +267,7 @@ class SIM_CLR(tf.keras.Model):
                     filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
                 tf.keras.layers.Flatten(),
                 # No activation
-                tf.keras.layers.Dense(represent_dims),
+                tf.keras.layers.Dense(represent_dims + represent_dims),
             ]
         )
         self.projection_head = tf.keras.Sequential(
@@ -276,10 +276,45 @@ class SIM_CLR(tf.keras.Model):
                 tf.keras.layers.Dense(num_cls, use_bias=False)
             ]
         )
-    def encode(self, X):
-        return self.encoder(X)
 
-    def projection(self, X):
-        h = self.encode(X)
-        z = self.projection_head(h)
+        self.decoder = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=(represent_dims,)),
+                tf.keras.layers.Dense(units=self.output_f * self.output_f * 32, activation=tf.nn.relu),
+                tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
+                tf.keras.layers.Conv2DTranspose(
+                    filters=64, kernel_size=3, strides=2, padding='same',
+                    activation='relu'),
+                tf.keras.layers.Conv2DTranspose(
+                    filters=32, kernel_size=3, strides=2, padding='same',
+                    activation='relu'),
+                # No activation
+                tf.keras.layers.Conv2DTranspose(
+                    filters=self.output_s, kernel_size=3, strides=1, padding='same'),
+            ]
+        )
+
+    def sample(self, eps=None):
+        if eps is None:
+            eps = tf.random.normal(shape=(100, self.latent_dim))
+        return self.decode(eps, apply_sigmoid=True)
+
+    def encode(self, x):
+        mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
+        return mean, logvar
+
+    def reparameterize(self, mean, logvar, id=False):
+        eps = tf.random.normal(shape=mean.shape)
+        z = eps * tf.exp(logvar * .5) + mean
         return z
+
+    def decode(self, z, apply_sigmoid=False):
+        logits = self.decoder(z)
+        if apply_sigmoid:
+            probs = tf.sigmoid(logits)
+            return probs
+        return logits
+
+    def projection(self, z):
+        h = self.projection_head(z)
+        return h
