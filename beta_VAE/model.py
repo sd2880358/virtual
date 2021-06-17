@@ -253,12 +253,12 @@ class S_Decoder(tf.keras.Model):
 
 
 class SIM_CLR(tf.keras.Model):
-    def __init__ (self, shape=[28,28,1], beta=4, latent_dims=8, num_cls=10):
+    def __init__ (self, shape=[28,28,1], beta=4, latent_dim=8, num_cls=10):
         super(SIM_CLR, self).__init__()
         self.beta = beta
         self.shape = shape
         self.num_cls = num_cls
-        self.latent_dims = latent_dims
+        self.latent_dim = latent_dim
         self.output_f = int(shape[0] / 4)
         self.output_s = shape[2]
         self.encoder = tf.keras.Sequential(
@@ -270,19 +270,19 @@ class SIM_CLR(tf.keras.Model):
                     filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
                 tf.keras.layers.Flatten(),
                 # No activation
-                tf.keras.layers.Dense(latent_dims + latent_dims),
+                tf.keras.layers.Dense(latent_dim + latent_dim),
             ]
         )
         self.projection_head = tf.keras.Sequential(
             [
-                tf.keras.layers.InputLayer(latent_dims),
+                tf.keras.layers.InputLayer(latent_dim),
                 tf.keras.layers.Dense(num_cls, use_bias=False)
             ]
         )
 
         self.decoder = tf.keras.Sequential(
             [
-                tf.keras.layers.InputLayer(input_shape=(latent_dims,)),
+                tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
                 tf.keras.layers.Dense(units=self.output_f * self.output_f * 32, activation=tf.nn.relu),
                 tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
                 tf.keras.layers.Conv2DTranspose(
