@@ -253,8 +253,9 @@ class S_Decoder(tf.keras.Model):
 
 
 class SIM_CLR(tf.keras.Model):
-    def __init__ (self, shape=[28,28,1], represent_dims=8, num_cls=10):
+    def __init__ (self, shape=[28,28,1], beta=4, represent_dims=8, num_cls=10):
         super(SIM_CLR, self).__init__()
+        self.beta = beta
         self.shape = shape
         self.num_cls = num_cls
         self.factor_dims = represent_dims

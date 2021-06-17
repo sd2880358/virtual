@@ -22,7 +22,7 @@ def reconstruction_loss(model, X, y):
     X_pred = model.decode(Z)
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=X_pred, labels=X)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
-    h = model.projection(z)
+    h = model.projection(Z)
     encode_loss = top_loss(model, h, y)
     return -tf.reduce_mean(logx_z) + encode_loss, h
 
