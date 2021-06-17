@@ -258,6 +258,8 @@ class SIM_CLR(tf.keras.Model):
         self.shape = shape
         self.num_cls = num_cls
         self.factor_dims = represent_dims
+        self.output_f = int(shape[0] / 4)
+        self.output_s = shape[2]
         self.encoder = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=shape),
