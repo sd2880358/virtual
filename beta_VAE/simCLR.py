@@ -153,7 +153,7 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
                 correct_r_h = np.sum(r_h.numpy().argmax(-1) == test_labels)
                 acc = (correct_r_h/float(len(test_labels)))
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-                loss(total_loss, acc)
+                loss([total_loss, acc])
             elbo = loss.result()
             print('Epoch: {}, elbo: {}, accuracy: {}, time elapse for current epoch: {}'
                   .format(epoch+1, -elbo[0], elbo[1], end_time - start_time))
