@@ -136,8 +136,8 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
             train_step(model, x, y, [0, 360], optimizer)
 
         end_time = time.time()
-        loss = tf.keras.metrics.Mean()
-
+        elbo_loss = tf.keras.metrics.Mean()
+        acc = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
         if (epoch + 1)%10 == 0:
             ckpt_save_path = ckpt_manager.save()
@@ -151,12 +151,14 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
                 ori_cross_l = ori_cross_loss(model, test_set[0], d, r_x)
                 rota_cross_l = rota_cross_loss(model, test_set[0], d, r_x)
                 correct_r_h = np.sum(r_h.numpy().argmax(-1) == test_labels)
-                acc = (correct_r_h/float(len(test_labels)))
+                percentage = (correct_r_h/float(len(test_labels)))
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-                loss([total_loss, acc])
-            elbo = loss.result()
+                elbo_loss(total_loss)
+                acc(percentage)
+            elbo =  -elbo_loss.result()
+            avage_acc = acc.result()
             print('Epoch: {}, elbo: {}, accuracy: {}, time elapse for current epoch: {}'
-                  .format(epoch+1, -elbo[0], elbo[1], end_time - start_time))
+                  .format(epoch+1, -elbo, avage_acc, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
