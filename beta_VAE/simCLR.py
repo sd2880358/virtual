@@ -185,13 +185,13 @@ def pre_cast(dataset, digits):
 
 
 if __name__ == '__main__':
-    (mnist_images, mnist_labels), (test_images, test_labels) = tf.keras.datasets.mnist.load_data()
+    (mnist_images, mnist_labels), (test_images, testset_labels) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
     test_images = preprocess_images(test_images)
     train_images = mnist_images[np.where(np.isin(mnist_labels, [0, 1]))]
-    test_images = test_images[np.where(np.isin(test_labels, [0, 1]))]
+    test_images = test_images[np.where(np.isin(testset_labels, [0, 1]))]
     train_labels = mnist_labels[np.isin(mnist_labels, [0,1])]
-    train_labels = test_labels[np.isin(test_labels, [0, 1])]
+    test_labels = testset_labels[np.isin(testset_labels, [0, 1])]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 50
