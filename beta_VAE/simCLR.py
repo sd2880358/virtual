@@ -158,7 +158,7 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
             elbo =  -elbo_loss.result()
             avage_acc = acc.result()
             print('Epoch: {}, elbo: {}, accuracy: {}, time elapse for current epoch: {}'
-                  .format(epoch+1, -elbo, avage_acc, end_time - start_time))
+                  .format(epoch+1, elbo, avage_acc, end_time - start_time))
 
     #compute_and_save_inception_score(model, file_path)
 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     test_labels = testset_labels[np.isin(testset_labels, [0, 1])]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
-    epochs = 2
+    epochs = 10
     batch_size = 32
     sim_clr = SIM_CLR()
     train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
