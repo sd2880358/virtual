@@ -195,7 +195,7 @@ if __name__ == '__main__':
     train_images = mnist_images[np.where(np.isin(mnist_labels, [3, 4]))]
     test_images = test_images[np.where(np.isin(testset_labels, [3, 4]))]
     full_range_set = mnist_images[np.where(np.isin(mnist_labels, [3]))]
-    full_range_label = mnist_images[np.where(np.isin(mnist_labels, [3]))]
+    full_range_label = mnist_labels[np.where(np.isin(mnist_labels, [3]))]
     train_labels = mnist_labels[np.isin(mnist_labels, [3,4])]
     test_labels = testset_labels[np.isin(testset_labels, [3, 4])]
     num_examples_to_generate = 16
