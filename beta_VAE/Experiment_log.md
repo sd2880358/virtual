@@ -100,3 +100,8 @@
     - dsprite test 4 shape (full range 1, partial range 0)
     
     - dsprite test 5 shape (full range 2, partial range 0)
+    
+- 6/20
+    - simclr test3:
+    
+    full range set (0-360) digit 3, partial (3,4), 30 epochs
