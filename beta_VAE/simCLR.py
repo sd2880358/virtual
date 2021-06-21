@@ -212,7 +212,7 @@ if __name__ == '__main__':
     full_range_set = (tf.data.Dataset.from_tensor_slices(full_range_set)
             .shuffle(len(full_range_set), seed=1).batch(batch_size))
 
-    full_range_labels = (tf.data.Dataset.from_tensor_slices(full_range_label)
+    full_range_label = (tf.data.Dataset.from_tensor_slices(full_range_label)
                     .shuffle(len(full_range_label), seed=1).batch(batch_size))
 
 
