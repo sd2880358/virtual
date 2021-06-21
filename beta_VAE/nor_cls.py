@@ -18,7 +18,7 @@ if cls_manager.latest_checkpoint:
     print('classifier checkpoint restored!!')
 partial_range_dataset = train_images[np.where(train_labels!=3)]
 partial_range_labels = train_labels[np.where(train_labels!=3)]
-partial_range_datase, partial_range_labels = rotate_dataset(train_images, train_labels, [0, 180])
+partial_range_dataset, partial_range_labels = rotate_dataset(train_images, train_labels, [0, 180])
 full_range_dataset = train_images[np.where(train_labels==3)]
 full_range_labels = train_labels[np.where(train_labels==3)]
 full_range_dataset, full_range_labels = rotate_dataset(full_range_dataset, full_range_labels, [0, 360])
