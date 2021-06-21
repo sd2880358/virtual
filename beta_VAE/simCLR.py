@@ -104,7 +104,7 @@ def top_loss(model, h, y):
 
 
 
-def start_train(epochs, model, train_set, test_set, date, filePath):
+def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
     @tf.function
     def train_step(model, x, y, degree_set, optimizer):
         s = degree_set[0]
@@ -131,9 +131,13 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
     for epoch in range(epochs):
 
         start_time = time.time()
+        for x, y in tf.data.Dataset.zip((full_set[0], full_set[1])):
+            train_step(model, x, y, [190, 360], optimizer)
 
-        for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, x, y, [0, 360], optimizer)
+
+        for x, y in tf.data.Dataset.zip((partial_set[0], partial_set[1])):
+            train_step(model, x, y, [0, 180], optimizer)
+
 
         end_time = time.time()
         elbo_loss = tf.keras.metrics.Mean()
@@ -188,13 +192,15 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (test_images, testset_labels) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
     test_images = preprocess_images(test_images)
-    train_images = mnist_images[np.where(np.isin(mnist_labels, [0, 1]))]
-    test_images = test_images[np.where(np.isin(testset_labels, [0, 1]))]
-    train_labels = mnist_labels[np.isin(mnist_labels, [0,1])]
-    test_labels = testset_labels[np.isin(testset_labels, [0, 1])]
+    train_images = mnist_images[np.where(np.isin(mnist_labels, [3, 4]))]
+    test_images = test_images[np.where(np.isin(testset_labels, [3, 4]))]
+    full_range_set = mnist_images[np.where(np.isin(mnist_labels, [3]))]
+    full_range_label = mnist_images[np.where(np.isin(mnist_labels, [3]))]
+    train_labels = mnist_labels[np.isin(mnist_labels, [3,4])]
+    test_labels = testset_labels[np.isin(testset_labels, [3, 4])]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
-    epochs = 10
+    epochs = 30
     batch_size = 32
     sim_clr = SIM_CLR()
     train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
@@ -204,6 +210,7 @@ if __name__ == '__main__':
                     .shuffle(len(mnist_labels), seed=1).batch(batch_size))
 
 
-    date = '6_16/'
-    file_path = 'clr_test2/'
-    start_train(epochs, sim_clr, [train_images, train_labels], [test_images, test_labels], date, file_path)
+    date = '6_20/'
+    file_path = 'clr_test3/'
+    start_train(epochs, sim_clr, [train_images, train_labels], [full_range_set, full_range_label],
+                [test_images, test_labels], date, file_path)
