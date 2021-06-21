@@ -203,11 +203,17 @@ if __name__ == '__main__':
     epochs = 30
     batch_size = 32
     sim_clr = SIM_CLR()
-    train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
-            .shuffle(len(mnist_images), seed=1).batch(batch_size))
+    train_images = (tf.data.Dataset.from_tensor_slices(train_images)
+            .shuffle(len(train_images), seed=1).batch(batch_size))
 
-    train_labels = (tf.data.Dataset.from_tensor_slices(mnist_labels)
-                    .shuffle(len(mnist_labels), seed=1).batch(batch_size))
+    train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
+                    .shuffle(len(train_labels), seed=1).batch(batch_size))
+
+    full_range_set = (tf.data.Dataset.from_tensor_slices(full_range_set)
+            .shuffle(len(full_range_set), seed=1).batch(batch_size))
+
+    full_range_labels = (tf.data.Dataset.from_tensor_slices(full_range_label)
+                    .shuffle(len(full_range_label), seed=1).batch(batch_size))
 
 
     date = '6_20/'
