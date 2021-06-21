@@ -154,8 +154,8 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
                 rota_loss, r_h = reconstruction_loss(model, test_set[0], test_set[1])
                 ori_cross_l = ori_cross_loss(model, test_set[0], d, r_x)
                 rota_cross_l = rota_cross_loss(model, test_set[0], d, r_x)
-                correct_r_h = np.sum(r_h.numpy().argmax(-1) == test_labels)
-                percentage = (correct_r_h/float(len(test_labels)))
+                correct_r_h = np.sum(r_h.numpy().argmax(-1) == test_set[1])
+                percentage = (correct_r_h/float(len(test_set[1])))
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
                 elbo_loss(total_loss)
                 acc(percentage)
