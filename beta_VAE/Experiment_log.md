@@ -105,3 +105,6 @@
     - simclr test3:
     
     full range set (0-360) digit 3, partial (3,4), 30 epochs
+    
+    - simclr test4:
+    full range set (0-360) digit 3, partial all digit

@@ -193,21 +193,21 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
     test_images = preprocess_images(test_images)
     train_images = mnist_images[np.where(np.isin(mnist_labels, [3, 4]))]
-    test_images = test_images[np.where(np.isin(testset_labels, [3, 4]))]
     full_range_set = mnist_images[np.where(np.isin(mnist_labels, [3]))]
     full_range_label = mnist_labels[np.where(np.isin(mnist_labels, [3]))]
     train_labels = mnist_labels[np.isin(mnist_labels, [3,4])]
-    test_labels = testset_labels[np.isin(testset_labels, [3, 4])]
+    #test_images = test_images[np.where(np.isin(testset_labels, [3, 4]))]
+    #test_labels = testset_labels[np.isin(testset_labels, [3, 4])]
     num_examples_to_generate = 16
     model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
     epochs = 30
     batch_size = 32
     sim_clr = SIM_CLR()
-    train_images = (tf.data.Dataset.from_tensor_slices(train_images)
-            .shuffle(len(train_images), seed=1).batch(batch_size))
+    train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
+            .shuffle(len(mnist_images), seed=1).batch(batch_size))
 
-    train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
-                    .shuffle(len(train_labels), seed=1).batch(batch_size))
+    train_labels = (tf.data.Dataset.from_tensor_slices(mnist_labels)
+                    .shuffle(len(mnist_labels), seed=1).batch(batch_size))
 
     full_range_set = (tf.data.Dataset.from_tensor_slices(full_range_set)
             .shuffle(len(full_range_set), seed=1).batch(batch_size))
@@ -217,6 +217,6 @@ if __name__ == '__main__':
 
 
     date = '6_20/'
-    file_path = 'clr_test3/'
+    file_path = 'clr_test4/'
     start_train(epochs, sim_clr, [train_images, train_labels], [full_range_set, full_range_label],
-                [test_images, test_labels], date, file_path)
+                [test_images, testset_labels], date, file_path)
