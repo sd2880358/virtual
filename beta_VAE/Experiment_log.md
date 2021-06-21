@@ -106,5 +106,7 @@
     
     full range set (0-360) digit 3, partial (3,4), 30 epochs
     
+    - baseline_model:
+    
     - simclr test4:
-    full range set (0-360) digit 3, partial all digit
+    full range set (0-360) digit 3, partial all digit(accuracy_rate=71%)
