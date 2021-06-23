@@ -9,8 +9,11 @@ def convert_to_csv(data, labels, dic):
     df.to_csv('./{}'.format(dic), index=False)
 
 
+files = ['breast-cancer', 'diabetes', 'german', 'svmguide2', 'svmguide4']
 y, x = svm_read_problem('./australian_scale')
-features = convert_to_csv(x, y, 'c_australian_scale')
+for file in files:
+    y, x = svm_read_problem(file)
+    convert_to_csv(x, y, 'c_{}'.format(file))
 
 
 
