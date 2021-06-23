@@ -2,4 +2,6 @@ from libsvm.svmutil import *
 import pandas as pd
 
 y, x = svm_read_problem('./australian_scale')
-print(x[0][2])
+features = [[i for i in x[j]] for j in range(len(x[0]))]
+data = pd.DataFrame([x, y], dtype='float32')
+data.to_csv("./c_australian_scale")
