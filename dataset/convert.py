@@ -7,7 +7,7 @@ data = pd.DataFrame(features, dtype='float32')
 data.to_csv("./c_australian_scale", index=False)
 
 
-def covert_to_list(data):
+def convert_to_list(data):
     l = []
     for i in range(len(data)):
         tmp = []
