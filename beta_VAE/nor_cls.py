@@ -29,6 +29,7 @@ classifier.compile(optimizer='adam',
                    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                    metrics=['accuracy'])
 classifier.fit(train_images, train_labels, epochs=50, verbose=1, shuffle=True,
+               batch_size=32,
                validation_data=(test_images,  test_labels))
 test_loss, test_acc = classifier.evaluate(test_images,  test_labels, verbose=2)
 print('\nTest accuracy:', test_acc)
