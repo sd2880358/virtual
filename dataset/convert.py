@@ -5,8 +5,8 @@ def convert_to_list(data):
     l = []
     for i in range(len(data)):
         tmp = []
-        for j in range(len(data[i])):
-            tmp.append(data[i][j])
+        for key in data[i].keys:
+            tmp.append(data[i][key])
         l.append(tmp)
     return l
 
