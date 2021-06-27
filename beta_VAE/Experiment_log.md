@@ -110,3 +110,6 @@
     
     - simclr test4:
     full range set (0-360) digit 3, partial all digit(accuracy_rate=71%)
+    
+    - simclr test 5:
+    full range set (0-360) digit 0, partial range all digit (accuracy rate) 

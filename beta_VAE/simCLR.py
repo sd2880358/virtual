@@ -194,10 +194,10 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (test_images, testset_labels) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
     test_images = preprocess_images(test_images)
-    train_images = mnist_images[np.where(mnist_labels!=3)]
-    train_labels = mnist_labels[np.where(mnist_labels!=3)]
-    full_range_set = mnist_images[np.where(np.isin(mnist_labels, [3]))]
-    full_range_label = mnist_labels[np.where(np.isin(mnist_labels, [3]))]
+    train_images = mnist_images[np.where(mnist_labels!=0)]
+    train_labels = mnist_labels[np.where(mnist_labels!=0)]
+    full_range_set = mnist_images[np.where(np.isin(mnist_labels, [0]))]
+    full_range_label = mnist_labels[np.where(np.isin(mnist_labels, [0]))]
     #test_images = test_images[np.where(np.isin(testset_labels, [3, 4]))]
     #test_labels = testset_labels[np.isin(testset_labels, [3, 4])]
     num_examples_to_generate = 16
