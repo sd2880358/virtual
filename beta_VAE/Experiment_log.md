@@ -122,4 +122,7 @@
     classifier also learn the rotated z for oversample (acc=72.6%).
     
    - simclr test 7:
-   oversampling (from 0, 360 degree for all data)
+   oversampling (from 0, 360 degree for all data, acc=95.97%) without adjust decoder;
+   
+   - simclr test8:
+   oversampling (from 0 to 360 degree, acc) adjust decoder; 
