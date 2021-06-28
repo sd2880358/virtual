@@ -127,7 +127,7 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
                     r_m = np.identity(latent)
                     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
                     r_z = rotate_vector(z, r_m)
-                    r_x = model.decode(r_z)
+                    r_x = model.sample(r_z)
                     ori_loss, _ = compute_loss(model, r_x, y)
                     total_loss = ori_loss
                 gradients = tape.gradient(total_loss, model.trainable_variables)
