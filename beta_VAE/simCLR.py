@@ -224,6 +224,6 @@ if __name__ == '__main__':
 
 
     date = '6_27/'
-    file_path = 'clr_test5/'
+    file_path = 'clr_test6/'
     start_train(epochs, sim_clr, [train_images, train_labels], [full_range_set, full_range_label],
                 [test_images, testset_labels], date, file_path)

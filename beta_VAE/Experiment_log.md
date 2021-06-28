@@ -110,6 +110,13 @@
     
     - simclr test4:
     full range set (0-360) digit 3, partial all digit(accuracy_rate=71%)
-    
+
+- 6/27
     - simclr test 5:
+    full range set (0-360) digit 0, partial range all digit (accuracy rate=70%) 
+    
+    - baseline_model: full_range 0, partial all digits (acc=76.84%)
+    
+    - simclr test 6:
     full range set (0-360) digit 0, partial range all digit (accuracy rate) 
+    classifier also learn the rotated z for oversample.
