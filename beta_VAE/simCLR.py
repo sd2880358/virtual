@@ -128,8 +128,11 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
                     r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
                     r_z = rotate_vector(z, r_m)
                     r_x = model.sample(r_z)
-                    ori_loss, _ = compute_loss(model, r_x, y)
-                    total_loss = ori_loss
+                    r_mean, r_logvar = model.encode(r_x)
+                    r_x_z = model.reparameterize(r_mean, r_logvar)
+                    h = model.projection(r_x_z)
+                    encode_loss = top_loss(model, h, y)
+                    total_loss = encode_loss
                 gradients = tape.gradient(total_loss, model.trainable_variables)
                 optimizer.apply_gradients(zip(gradients, model.trainable_variables))
             else:
