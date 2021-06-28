@@ -40,7 +40,7 @@ def rotate_vector(vector, matrix):
     return test
 
 
-def ori_cross_loss(model, x, d, r_x):
+def ori_cross_loss(model, x, d, r_x, y):
     mean, logvar = model.encode(r_x)
     r_z = model.reparameterize(mean, logvar)
     c, s = np.cos(d), np.sin(d)
@@ -52,10 +52,14 @@ def ori_cross_loss(model, x, d, r_x):
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
 
-    return -tf.reduce_mean(logx_z)
+    h = model.projection(phi_z)
+    encode_loss = top_loss(model, h, y)
 
 
-def rota_cross_loss(model, x, d, r_x):
+    return -tf.reduce_mean(logx_z) + encode_loss
+
+
+def rota_cross_loss(model, x, d, r_x, y):
     c, s = np.cos(d), np.sin(d)
     latent = model.latent_dim
     r_m = np.identity(latent)
@@ -65,10 +69,13 @@ def rota_cross_loss(model, x, d, r_x):
     phi_z = rotate_vector(z, r_m)
     phi_x = model.decode(phi_z)
 
+    h = model.projection(phi_z)
+    encode_loss = top_loss(model, h, y)
+
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=phi_x, labels=r_x)
     logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
 
-    return -tf.reduce_mean(logx_z)
+    return -tf.reduce_mean(logx_z) + encode_loss
 
 
 
@@ -115,8 +122,8 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
                 r_x = rotate(x, d)
                 ori_loss, _ = compute_loss(model, x, y)
                 rota_loss, _ = reconstruction_loss(model, r_x, y)
-                ori_cross_l = ori_cross_loss(model, x, d, r_x)
-                rota_cross_l = rota_cross_loss(model, x, d, r_x)
+                ori_cross_l = ori_cross_loss(model, x, d, r_x, y)
+                rota_cross_l = rota_cross_loss(model, x, d, r_x, y)
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
             gradients = tape.gradient(total_loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -131,8 +138,6 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
     for epoch in range(epochs):
 
         start_time = time.time()
-
-
 
         for x, y in tf.data.Dataset.zip((partial_set[0], partial_set[1])):
             train_step(model, x, y, [0, 180], optimizer)
@@ -154,8 +159,8 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
                 r_x = rotate(test_set[0], d)
                 ori_loss, _ = compute_loss(model, test_set[0], test_set[1])
                 rota_loss, r_h = reconstruction_loss(model, test_set[0], test_set[1])
-                ori_cross_l = ori_cross_loss(model, test_set[0], d, r_x)
-                rota_cross_l = rota_cross_loss(model, test_set[0], d, r_x)
+                ori_cross_l = ori_cross_loss(model, test_set[0], d, r_x, y)
+                rota_cross_l = rota_cross_loss(model, test_set[0], d, r_x, y)
                 correct_r_h = np.sum(r_h.numpy().argmax(-1) == test_set[1])
                 percentage = (correct_r_h/float(len(test_set[1])))
                 total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
