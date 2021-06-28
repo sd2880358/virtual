@@ -119,4 +119,7 @@
     
     - simclr test 6:
     full range set (0-360) digit 0, partial range all digit (accuracy rate) 
-    classifier also learn the rotated z for oversample.
+    classifier also learn the rotated z for oversample (acc=72.6%).
+    
+   - simclr test 7:
+   oversampling (from 0, 360 degree for all data)

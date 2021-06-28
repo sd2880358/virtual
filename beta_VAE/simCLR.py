@@ -113,20 +113,35 @@ def top_loss(model, h, y):
 
 def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
     @tf.function
-    def train_step(model, x, y, degree_set, optimizer):
+    def train_step(model, x, y, degree_set, optimizer, oversample=False):
         s = degree_set[0]
         e = degree_set[1]
         for i in range(s, e + 10, 10):
             d = np.radians(i)
-            with tf.GradientTape() as tape:
-                r_x = rotate(x, d)
-                ori_loss, _ = compute_loss(model, x, y)
-                rota_loss, _ = reconstruction_loss(model, r_x, y)
-                ori_cross_l = ori_cross_loss(model, x, d, r_x, y)
-                rota_cross_l = rota_cross_loss(model, x, d, r_x, y)
-                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-            gradients = tape.gradient(total_loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+            if (oversample):
+                with tf.GradientTape() as tape:
+                    mean, logvar = model.encode(x)
+                    z = model.reparameterize(mean, logvar)
+                    c, s = np.cos(d), np.sin(d)
+                    latent = model.latent_dim
+                    r_m = np.identity(latent)
+                    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
+                    r_z = rotate_vector(z, r_m)
+                    r_x = model.decode(r_z)
+                    ori_loss, _ = compute_loss(model, r_x, y)
+                    total_loss = ori_loss
+                gradients = tape.gradient(total_loss, model.trainable_variables)
+                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+            else:
+                with tf.GradientTape() as tape:
+                    r_x = rotate(x, d)
+                    ori_loss, _ = compute_loss(model, x, y)
+                    rota_loss, _ = reconstruction_loss(model, r_x, y)
+                    ori_cross_l = ori_cross_loss(model, x, d, r_x, y)
+                    rota_cross_l = rota_cross_loss(model, x, d, r_x, y)
+                    total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
+                gradients = tape.gradient(total_loss, model.trainable_variables)
+                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(sim_clr=model,
                                optimizer=optimizer)
@@ -144,6 +159,9 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
 
         for x, y in tf.data.Dataset.zip((full_set[0], full_set[1])):
             train_step(model, x, y, [190, 360], optimizer)
+
+        for x,y in tf.data.Dataset.zip((partial_set[0], partial_set[1])):
+            train_step(model, x, y, [0, 360], optimizer, oversample=True)
 
 
         end_time = time.time()
@@ -223,7 +241,7 @@ if __name__ == '__main__':
                     .shuffle(len(full_range_label), seed=1).batch(batch_size))
 
 
-    date = '6_27/'
-    file_path = 'clr_test6/'
+    date = '6_28/'
+    file_path = 'clr_test7/'
     start_train(epochs, sim_clr, [train_images, train_labels], [full_range_set, full_range_label],
                 [test_images, testset_labels], date, file_path)
