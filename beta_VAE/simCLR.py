@@ -160,7 +160,7 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
         elbo_loss = tf.keras.metrics.Mean()
         acc = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if (epoch + 1)%1 == 0:
+        if (epoch + 1)%5 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     num_examples_to_generate = 16
     epochs = 50
     batch_size = 32
-    sim_clr = SIM_CLR()
+    sim_clr = SIM_CLR(model='mlp')
     train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
             .shuffle(len(mnist_images), seed=1).batch(batch_size))
 

@@ -209,33 +209,35 @@ class Classifier(tf.keras.Model):
 
 
 class S_Decoder(tf.keras.Model):
-    def __init__ (self, x_size=[28,28,1], shape=786, factor_dims=2):
+    def __init__ (self, x_size=[28,28,1], shape=786, factor_dims=2, model='cnn'):
         super(S_Decoder, self).__init__()
         self.input_size = x_size
         self.shape = shape
         self.factor_dims = factor_dims
-        self.encoder = tf.keras.Sequential(
-            [
-                tf.keras.layers.InputLayer(input_shape=x_size),
-                tf.keras.layers.Dense(
-                    64, activation='relu'),
-                tf.keras.layers.Dense(
-                32, activation='relu'),
-                tf.keras.layers.Flatten(),
-                # No activation
-                tf.keras.layers.Dense(factor_dims)
-            ]
-        )
-        self.decoder = tf.keras.Sequential(
-            [
-                tf.keras.layers.InputLayer(input_shape=(shape)),
-                tf.keras.layers.Dense(784, activation='relu'),
-                tf.keras.layers.Reshape([28, 28, 1]),
-                tf.keras.layers.Dense(3, activation='relu'),
-                tf.keras.layers.Dense(1),
-            ]
+        if (model == 'cnn'):
+            self.encoder = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=x_size),
+                    tf.keras.layers.Dense(
+                        64, activation='relu'),
+                    tf.keras.layers.Dense(
+                    32, activation='relu'),
+                    tf.keras.layers.Flatten(),
+                    # No activation
+                    tf.keras.layers.Dense(factor_dims)
+                ]
+            )
+            self.decoder = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=(shape)),
+                    tf.keras.layers.Dense(784, activation='relu'),
+                    tf.keras.layers.Reshape([28, 28, 1]),
+                    tf.keras.layers.Dense(3, activation='relu'),
+                    tf.keras.layers.Dense(1),
+                ]
 
-        )
+            )
+
         assert self.decoder.output_shape == (None, 28, 28, 1)
 
     def decode(self, x, factor, apply_sigmoid=False):
@@ -253,7 +255,7 @@ class S_Decoder(tf.keras.Model):
 
 
 class SIM_CLR(tf.keras.Model):
-    def __init__ (self, shape=[28,28,1], beta=4, latent_dim=8, num_cls=10):
+    def __init__ (self, shape=[28,28,1], beta=4, latent_dim=8, num_cls=10, model='cnn'):
         super(SIM_CLR, self).__init__()
         self.beta = beta
         self.shape = shape
@@ -261,39 +263,67 @@ class SIM_CLR(tf.keras.Model):
         self.latent_dim = latent_dim
         self.output_f = int(shape[0] / 4)
         self.output_s = shape[2]
-        self.encoder = tf.keras.Sequential(
-            [
-                tf.keras.layers.InputLayer(input_shape=shape),
-                tf.keras.layers.Conv2D(
-                    filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
-                tf.keras.layers.Conv2D(
-                    filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
-                tf.keras.layers.Flatten(),
-                # No activation
-                tf.keras.layers.Dense(latent_dim + latent_dim),
-            ]
-        )
+        if (model == 'cnn'):
+            self.encoder = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=shape),
+                    tf.keras.layers.Conv2D(
+                        filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
+                    tf.keras.layers.Conv2D(
+                        filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
+                    tf.keras.layers.Flatten(),
+                    # No activation
+                    tf.keras.layers.Dense(latent_dim + latent_dim),
+                ]
+            )
+            self.decoder = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
+                    tf.keras.layers.Dense(units=self.output_f * self.output_f * 32, activation=tf.nn.relu),
+                    tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
+                    tf.keras.layers.Conv2DTranspose(
+                        filters=64, kernel_size=3, strides=2, padding='same',
+                        activation='relu'),
+                    tf.keras.layers.Conv2DTranspose(
+                        filters=32, kernel_size=3, strides=2, padding='same',
+                        activation='relu'),
+                    # No activation
+                    tf.keras.layers.Conv2DTranspose(
+                        filters=self.output_s, kernel_size=3, strides=1, padding='same'),
+                ]
+            )
+        elif (model == "mlp"):
+            self.encoder = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=shape),
+                    tf.keras.layers.Dense(
+                        64, activation='relu'),
+                    tf.keras.layers.Dense(
+                        32, activation='relu'),
+                    tf.keras.layers.Flatten(),
+                    # No activation
+                    tf.keras.layers.Dense(latent_dim + latent_dim),
+                ]
+            )
+            self.decoder = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
+                    tf.keras.layers.Dense(latent_dim * latent_dim, activation=tf.nn.relu),
+                    tf.keras.layers.Dense(
+                        512, activation='relu'),
+                    tf.keras.layers.Dense(
+                        2352,
+                        activation='relu'),
+                    # No activation
+                    tf.keras.layers.Reshape(target_shape=[28, 28, 3]),
+                    tf.keras.layers.Dense(
+                        1)
+                ]
+            )
         self.projection_head = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(latent_dim),
                 tf.keras.layers.Dense(num_cls, use_bias=False)
-            ]
-        )
-
-        self.decoder = tf.keras.Sequential(
-            [
-                tf.keras.layers.InputLayer(input_shape=(latent_dim,)),
-                tf.keras.layers.Dense(units=self.output_f * self.output_f * 32, activation=tf.nn.relu),
-                tf.keras.layers.Reshape(target_shape=(self.output_f, self.output_f, 32)),
-                tf.keras.layers.Conv2DTranspose(
-                    filters=64, kernel_size=3, strides=2, padding='same',
-                    activation='relu'),
-                tf.keras.layers.Conv2DTranspose(
-                    filters=32, kernel_size=3, strides=2, padding='same',
-                    activation='relu'),
-                # No activation
-                tf.keras.layers.Conv2DTranspose(
-                    filters=self.output_s, kernel_size=3, strides=1, padding='same'),
             ]
         )
 
