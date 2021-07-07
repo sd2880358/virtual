@@ -125,4 +125,4 @@
    oversampling (from 0, 360 degree for all data, acc=95.97%) without adjust decoder;
    
    - simclr test8:
-   oversampling (from 0 to 360 degree, acc) adjust decoder; 
+   oversampling (from 0 to 360 degree, acc=86%) adjust decoder; 

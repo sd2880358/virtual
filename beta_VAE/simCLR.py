@@ -1,6 +1,6 @@
 import tensorflow as tf
 from model import CVAE, Classifier, SIM_CLR
-from dataset import preprocess_images, divide_dataset
+from dataset import preprocess_images, divide_dataset, imbalance_sample
 from tensorflow_addons.image import rotate
 import time
 from tensorflow.linalg import matvec
@@ -111,43 +111,35 @@ def top_loss(model, h, y):
 
 
 
-def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
+def start_train(epochs, model, train_set, test_set, date, filePath):
     @tf.function
-    def train_step(model, x, y, degree_set, optimizer, oversample=False):
-        s = degree_set[0]
-        e = degree_set[1]
-        for i in range(s, e + 10, 10):
-            d = np.radians(i)
-            if (oversample):
-                with tf.GradientTape() as tape:
-                    mean, logvar = model.encode(x)
-                    z = model.reparameterize(mean, logvar)
-                    c, s = np.cos(d), np.sin(d)
-                    latent = model.latent_dim
-                    r_m = np.identity(latent)
-                    r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
-                    r_z = rotate_vector(z, r_m)
-                    r_x = model.sample(r_z)
-                    '''
-                    r_mean, r_logvar = model.encode(r_x)
-                    r_x_z = model.reparameterize(r_mean, r_logvar)
-                    h = model.projection(r_x_z)
-                    encode_loss = top_loss(model, h, y)
-                    '''
-                    ori_loss, _ = compute_loss(model, x, y)
-                    total_loss = ori_loss
-                gradients = tape.gradient(total_loss, model.trainable_variables)
-                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-            else:
-                with tf.GradientTape() as tape:
-                    r_x = rotate(x, d)
-                    ori_loss, _ = compute_loss(model, x, y)
-                    rota_loss, _ = reconstruction_loss(model, r_x, y)
-                    ori_cross_l = ori_cross_loss(model, x, d, r_x, y)
-                    rota_cross_l = rota_cross_loss(model, x, d, r_x, y)
-                    total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-                gradients = tape.gradient(total_loss, model.trainable_variables)
-                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+    def train_step(model, x, y, optimizer, oversample=False):
+        if (oversample):
+            with tf.GradientTape() as tape:
+                mean, logvar = model.encode(x)
+                z = model.reparameterize(mean, logvar)
+                c, s = np.cos(d), np.sin(d)
+                latent = model.latent_dim
+                r_m = np.identity(latent)
+                r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
+                r_z = rotate_vector(z, r_m)
+                r_x = model.sample(r_z)
+                '''
+                r_mean, r_logvar = model.encode(r_x)
+                r_x_z = model.reparameterize(r_mean, r_logvar)
+                h = model.projection(r_x_z)
+                encode_loss = top_loss(model, h, y)
+                '''
+                ori_loss, _ = compute_loss(model, x, y)
+                total_loss = ori_loss
+            gradients = tape.gradient(total_loss, model.trainable_variables)
+            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        else:
+            with tf.GradientTape() as tape:
+                ori_loss, _ = compute_loss(model, x, y)
+                total_loss = ori_loss
+            gradients = tape.gradient(total_loss, model.trainable_variables)
+            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     checkpoint_path = "./checkpoints/"+ date + filePath
     ckpt = tf.train.Checkpoint(sim_clr=model,
                                optimizer=optimizer)
@@ -160,14 +152,8 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
 
         start_time = time.time()
 
-        for x, y in tf.data.Dataset.zip((partial_set[0], partial_set[1])):
-            train_step(model, x, y, [0, 180], optimizer)
-
-        for x, y in tf.data.Dataset.zip((full_set[0], full_set[1])):
-            train_step(model, x, y, [190, 360], optimizer)
-
-        for x,y in tf.data.Dataset.zip((partial_set[0], partial_set[1])):
-            train_step(model, x, y, [0, 360], optimizer, oversample=True)
+        for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
+            train_step(model, x, y, optimizer)
 
 
         end_time = time.time()
@@ -178,18 +164,12 @@ def start_train(epochs, model, partial_set, full_set, test_set, date, filePath):
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
-            for i in range(0, 370, 10):
-                d = np.radians(i)
-                r_x = rotate(test_set[0], d)
-                ori_loss, _ = compute_loss(model, test_set[0], test_set[1])
-                rota_loss, r_h = reconstruction_loss(model, test_set[0], test_set[1])
-                ori_cross_l = ori_cross_loss(model, test_set[0], d, r_x, test_set[1])
-                rota_cross_l = rota_cross_loss(model, test_set[0], d, r_x, test_set[1])
-                correct_r_h = np.sum(r_h.numpy().argmax(-1) == test_set[1])
-                percentage = (correct_r_h/float(len(test_set[1])))
-                total_loss = ori_loss + rota_loss + ori_cross_l + rota_cross_l
-                elbo_loss(total_loss)
-                acc(percentage)
+            ori_loss, h = compute_loss(model, test_set[0], test_set[1])
+            correct_r_h = np.sum(h.numpy().argmax(-1) == test_set[1])
+            percentage = (correct_r_h/float(len(test_set[1])))
+            total_loss = ori_loss
+            elbo_loss(total_loss)
+            acc(percentage)
             elbo =  -elbo_loss.result()
             avage_acc = acc.result()
             print('Epoch: {}, elbo: {}, accuracy: {}, time elapse for current epoch: {}'
@@ -223,15 +203,10 @@ if __name__ == '__main__':
     (mnist_images, mnist_labels), (test_images, testset_labels) = tf.keras.datasets.mnist.load_data()
     mnist_images = preprocess_images(mnist_images)
     test_images = preprocess_images(test_images)
-    train_images = mnist_images[np.where(mnist_labels!=0)]
-    train_labels = mnist_labels[np.where(mnist_labels!=0)]
-    full_range_set = mnist_images[np.where(np.isin(mnist_labels, [0]))]
-    full_range_label = mnist_labels[np.where(np.isin(mnist_labels, [0]))]
-    #test_images = test_images[np.where(np.isin(testset_labels, [3, 4]))]
-    #test_labels = testset_labels[np.isin(testset_labels, [3, 4])]
+    irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
+    train_images, train_labels = imbalance_sample(mnist_images, mnist_labels, irs)
     num_examples_to_generate = 16
-    model = CVAE(latent_dim=8, beta=6, shape=[28, 28, 1])
-    epochs = 30
+    epochs = 50
     batch_size = 32
     sim_clr = SIM_CLR()
     train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
@@ -240,14 +215,8 @@ if __name__ == '__main__':
     train_labels = (tf.data.Dataset.from_tensor_slices(mnist_labels)
                     .shuffle(len(mnist_labels), seed=1).batch(batch_size))
 
-    full_range_set = (tf.data.Dataset.from_tensor_slices(full_range_set)
-            .shuffle(len(full_range_set), seed=1).batch(batch_size))
 
-    full_range_label = (tf.data.Dataset.from_tensor_slices(full_range_label)
-                    .shuffle(len(full_range_label), seed=1).batch(batch_size))
-
-
-    date = '6_28/'
-    file_path = 'clr_test8/'
-    start_train(epochs, sim_clr, [train_images, train_labels], [full_range_set, full_range_label],
+    date = '7_7/'
+    file_path = 'mnist_test0/'
+    start_train(epochs, sim_clr, [train_images, train_labels],
                 [test_images, testset_labels], date, file_path)

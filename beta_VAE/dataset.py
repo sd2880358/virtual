@@ -27,3 +27,13 @@ def rotate_dataset(image, label, rotate_set):
   return dataset, labelset
 
 
+def imbalance_sample(data, labels, irs):
+  dataset = np.zeros([sum(irs), data.shape[1], data.shape[2], data.shape[3]]).astype('float32')
+  label_set = np.zeros([sum(irs)])
+  s = 0
+  for i in range(len(irs)):
+    tmp_data = data[np.where(labels == i)][:irs[i]]
+    dataset[s:s + irs[i], :, :, :] = tmp_data
+    label_set[s:s + irs[i]] = [i] * irs[i]
+    s += irs[i]
+  return dataset, label_set
