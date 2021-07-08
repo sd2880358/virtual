@@ -180,7 +180,7 @@ if __name__ == '__main__':
     epochs = 50
     batch_size = 32
     sim_clr = F_VAE(model='mlp')
-    classifier = Classifier(model='mlp')
+    classifier = Classifier(shape=[28, 28, 1], model='mlp')
 
     train_images = (tf.data.Dataset.from_tensor_slices(train_images)
             .shuffle(len(train_images), seed=1).batch(batch_size))
