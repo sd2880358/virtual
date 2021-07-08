@@ -28,11 +28,32 @@ def reconstruction_loss(model, X, y):
     return -tf.reduce_mean(logx_z) + encode_loss, h
 
 
-def log_normal_pdf(sample, mean, logvar, raxis=1):
-    log2pi = tf.math.log(2. * np.pi)
-    return tf.reduce_sum(
-        -.5 * ((sample - mean) ** 2. * tf.exp(-logvar) + logvar + log2pi),
-        axis=raxis)
+def kl_divergence(mean, logvar):
+    summand = tf.math.square(mean) + tf.math.exp(logvar) - logvar  - 1
+    return (0.5 * tf.reduce_sum(summand, [1]))
+
+def gaussian_log_density(samples, mean, logvar):
+    pi = tf.constant(np.pi)
+    normalization = tf.math.log(2. * pi)
+    inv_sigma = tf.math.exp(-logvar)
+    tmp = (samples - mean)
+    return -0.5 * (tmp * tmp * inv_sigma + logvar + normalization)
+
+def estimate_entropies(qz_samples, mean, logvar):
+    log_q_z_prob = gaussian_log_density(
+        tf.expand_dims(qz_samples,1),  tf.expand_dims(mean,0),
+    tf.expand_dims(logvar, 0))
+
+    log_q_z_product = tf.math.reduce_sum(
+        tf.math.reduce_logsumexp(log_q_z_prob, axis=1, keepdims=False),
+        axis=1, keepdims=False
+    )
+
+    log_qz = tf.math.reduce_logsumexp(
+        tf.math.reduce_sum(log_q_z_prob, axis=2, keepdims=False)
+    )
+    return log_qz, log_q_z_product
+
 
 
 def rotate_vector(vector, matrix):
@@ -54,12 +75,14 @@ def compute_loss(model, classifier, x, y):
     beta_loss = reco_loss + kl_loss * beta
     '''
     cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logit, labels=x)
-    logx_z = -tf.reduce_sum(cross_ent, axis=[1, 2, 3])
-    logpz = log_normal_pdf(features, 0., 0.)
-    logqz_x = log_normal_pdf(features, mean, logvar)
+    logx_z = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1, 2, 3]))
+    log_qz, logq_z_product = estimate_entropies(features, mean, logvar)
+
+    tc = tf.reduce_mean(log_qz - logq_z_product)
+    kl_loss = tf.reduce_mean(kl_divergence(mean, logvar))
     h = classifier.projection(x_logit)
     encode_loss = top_loss(classifier, h, y)
-    return -tf.reduce_mean(logx_z + beta * (logpz - logqz_x)) + encode_loss, h
+    return tf.reduce_mean(logx_z + kl_loss  + encode_loss + (beta - 1) * tc), h
 
 
 def top_loss(model, h, y):
@@ -76,27 +99,21 @@ def top_loss(model, h, y):
 
 def start_train(epochs, model, classifier, train_set, majority_set, test_set, date, filePath):
     @tf.function
-    def train_step(model, x, y, sim_optimizer, cls_optimizer, oversample=False):
+    def train_step(model, classifier, x, y, sim_optimizer, cls_optimizer, oversample=False):
         if (oversample):
             with tf.GradientTape() as tape:
                 mean, logvar = model.encode(x)
-                z = model.reparameterize(mean, logvar)
-                c, s = np.cos(d), np.sin(d)
-                latent = model.latent_dim
-                r_m = np.identity(latent)
-                r_m[0, [0, 1]], r_m[1, [0, 1]] = [c, s], [-s, c]
-                r_z = rotate_vector(z, r_m)
-                r_x = model.sample(r_z)
-                '''
-                r_mean, r_logvar = model.encode(r_x)
-                r_x_z = model.reparameterize(r_mean, r_logvar)
-                h = model.projection(r_x_z)
-                encode_loss = top_loss(model, h, y)
-                '''
-                ori_loss, _ = compute_loss(model, classifier, x, y)
-                total_loss = ori_loss
-            gradients = tape.gradient(total_loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+                features = model.reparameterize(mean, logvar)
+                num = len(y)
+                for id in range(1, 10):
+                    ids = [id] * num
+                    identity = tf.expand_dims(tf.cast(ids, tf.float32), 1)
+                    z = tf.concat([features, identity], axis=1)
+                    x_logit = model.encode(z)
+                    h = classifier.projection(x_logit)
+                    encode_loss = top_loss(classifier, h, tf.cast(ids, dtype='int'))
+                cls_gradients = tape.gradient(encode_loss, classifier.trainable_variables)
+                cls_optimizer.apply_gradients(zip(cls_gradients, classifier.trainable_variables))
         else:
             with tf.GradientTape() as sim_tape, tf.GradientTape() as cls_tape:
                 ori_loss, h = compute_loss(model, classifier, x, y)
@@ -120,7 +137,10 @@ def start_train(epochs, model, classifier, train_set, majority_set, test_set, da
         start_time = time.time()
 
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
-            train_step(model, x, y, sim_optimizer, cls_optimizer)
+            train_step(model, classifier, x, y, sim_optimizer, cls_optimizer)
+
+        for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
+            train_step(model, classifier, x, y, sim_optimizer, cls_optimizer, oversample=True)
 
         #for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
         #    train_step(model, x, y, optimizer)
