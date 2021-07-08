@@ -111,7 +111,7 @@ def top_loss(model, h, y):
 
 
 
-def start_train(epochs, model, train_set, test_set, date, filePath):
+def start_train(epochs, model, train_set, majority_set, test_set, date, filePath):
     @tf.function
     def train_step(model, x, y, optimizer, oversample=False):
         if (oversample):
@@ -154,6 +154,9 @@ def start_train(epochs, model, train_set, test_set, date, filePath):
 
         for x, y in tf.data.Dataset.zip((train_set[0], train_set[1])):
             train_step(model, x, y, optimizer)
+
+        #for x, y in tf.data.Dataset.zip((majority_set[0], majority_set[1])):
+        #    train_step(model, x, y, optimizer)
 
 
         end_time = time.time()
@@ -204,19 +207,26 @@ if __name__ == '__main__':
     mnist_images = preprocess_images(mnist_images)
     test_images = preprocess_images(test_images)
     irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
+    majority_images = mnist_images[np.where(mnist_labels==0)][irs[0]]
+    majority_labels = [0] * irs[0]
     train_images, train_labels = imbalance_sample(mnist_images, mnist_labels, irs)
     num_examples_to_generate = 16
     epochs = 50
     batch_size = 32
     sim_clr = SIM_CLR(model='mlp')
-    train_images = (tf.data.Dataset.from_tensor_slices(mnist_images)
-            .shuffle(len(mnist_images), seed=1).batch(batch_size))
+    train_images = (tf.data.Dataset.from_tensor_slices(train_images)
+            .shuffle(len(train_images), seed=1).batch(batch_size))
 
-    train_labels = (tf.data.Dataset.from_tensor_slices(mnist_labels)
-                    .shuffle(len(mnist_labels), seed=1).batch(batch_size))
+    train_labels = (tf.data.Dataset.from_tensor_slices(train_labels)
+                    .shuffle(len(train_labels), seed=1).batch(batch_size))
+
+    majority_images = (tf.data.Dataset.from_tensor_slices(majority_images)
+            .shuffle(len(majority_images), seed=1).batch(batch_size))
+
+
 
 
     date = '7_7/'
     file_path = 'mnist_test0/'
-    start_train(epochs, sim_clr, [train_images, train_labels],
+    start_train(epochs, sim_clr, [train_images, train_labels], [majority_images, majority_labels]
                 [test_images, testset_labels], date, file_path)
