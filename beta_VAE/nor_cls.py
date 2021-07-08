@@ -18,7 +18,7 @@ if cls_manager.latest_checkpoint:
     print('classifier checkpoint restored!!')
 irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
 
-train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
+train_images, train_labels = imbalance_sample(train_images, train_labels, irs)
 classifier.compile(optimizer='adam',
                    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                    metrics=['accuracy'])
