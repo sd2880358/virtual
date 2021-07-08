@@ -45,7 +45,8 @@ def compute_loss(model, classifier, x, y):
     beta = model.beta
     mean, logvar = model.encode(x)
     features = model.reparameterize(mean, logvar)
-    z = tf.concat([features, y], axis=1)
+    identity = tf.expand_dims(tf.cast(y, tf.float32), 1)
+    z = tf.concat([features, identity], axis=1)
     x_logit = model.decode(z)
     '''
     reco_loss = reconstruction_loss(x_logit, x)
@@ -129,7 +130,7 @@ def start_train(epochs, model, classifier, train_set, majority_set, test_set, da
         elbo_loss = tf.keras.metrics.Mean()
         acc = tf.keras.metrics.Mean()
         #generate_and_save_images(model, epochs, r_sample, "rotate_image")
-        if (epoch + 1)%5 == 0:
+        if (epoch + 1)%1 == 0:
             ckpt_save_path = ckpt_manager.save()
             print('Saving checkpoint for epoch {} at {}'.format(epoch + 1,
                                                         ckpt_save_path))
