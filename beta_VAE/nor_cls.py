@@ -1,5 +1,5 @@
 from model import Classifier
-from dataset import preprocess_images, rotate_dataset
+from dataset import preprocess_images, rotate_dataset, imbalance_sample
 
 import numpy as np
 import tensorflow as tf
@@ -9,22 +9,16 @@ import tensorflow as tf
 train_images = preprocess_images(train_set)
 test_images = preprocess_images(test_dataset)
 classifier = Classifier(shape=(28, 28, 1))
-filePath = "./base_line_classification"
+filePath = "./imbalance_classification"
 classifier_path = "./checkpoints/" + filePath
 cls = tf.train.Checkpoint(classifier=classifier)
 cls_manager = tf.train.CheckpointManager(cls, classifier_path, max_to_keep=5)
 if cls_manager.latest_checkpoint:
     cls.restore(cls_manager.latest_checkpoint)
     print('classifier checkpoint restored!!')
-partial_range_dataset = train_images[np.where(train_labels!=0)]
-partial_range_labels = train_labels[np.where(train_labels!=0)]
-partial_range_dataset, partial_range_labels = rotate_dataset(train_images, train_labels, [0, 180])
-full_range_dataset = train_images[np.where(train_labels==0)]
-full_range_labels = train_labels[np.where(train_labels==0)]
-full_range_dataset, full_range_labels = rotate_dataset(full_range_dataset, full_range_labels, [0, 360])
-train_images = np.concatenate([partial_range_dataset, full_range_dataset])
-train_labels = np.concatenate([partial_range_labels, full_range_labels])
-test_images, test_labels = rotate_dataset(test_images, test_labels, [0, 360])
+irs = [4000, 2000, 1000, 750, 500, 350, 200, 100, 60, 40]
+
+train_images, train_labels = imbalance_sample(train_set, train_labels, irs)
 classifier.compile(optimizer='adam',
                    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                    metrics=['accuracy'])

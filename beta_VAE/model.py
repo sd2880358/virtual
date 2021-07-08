@@ -159,24 +159,39 @@ class CVAE(tf.keras.Model):
 
 
 class Classifier(tf.keras.Model):
-    def __init__(self, shape):
+    def __init__(self, shape, model='cnn'):
         super(Classifier, self).__init__()
         self.shape = shape
-        self.model = tf.keras.Sequential(
-            [
-                tf.keras.layers.InputLayer(input_shape=(self.shape)),
-                tf.keras.layers.Conv2D(
-                    filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
-                tf.keras.layers.MaxPool2D(2,2),
-                tf.keras.layers.Conv2D(
-                    filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
-                tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(64, activation='relu'),
-                # No activation
-                tf.keras.layers.Dense(10, activation='softmax'),
-            ]
-        )
-
+        if (model == 'cnn'):
+            self.model = tf.keras.Sequential(
+                [
+                    tf.keras.layers.InputLayer(input_shape=(self.shape)),
+                    tf.keras.layers.Conv2D(
+                        filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
+                    tf.keras.layers.MaxPool2D(2,2),
+                    tf.keras.layers.Conv2D(
+                        filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
+                    tf.keras.layers.Flatten(),
+                    tf.keras.layers.Dense(64, activation='relu'),
+                    # No activation
+                    tf.keras.layers.Dense(10, activation='softmax'),
+                ]
+            )
+        elif (model == 'mlp'):
+            self.model = tf.keras.Sequential(
+                (
+                    [
+                        tf.keras.layers.InputLayer(input_shape=self.shape),
+                        tf.keras.layers.Dense(
+                            512, activation='relu'),
+                        tf.keras.layers.Dense(
+                            512, activation='relu'),
+                        tf.keras.layers.Flatten(),
+                        # No activation
+                        tf.keras.layers.Dense(10, activation='softmax'),
+                    ]
+                )
+            )
     def call(self, X):
         return self.model(X)
 
