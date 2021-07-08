@@ -228,5 +228,5 @@ if __name__ == '__main__':
 
     date = '7_7/'
     file_path = 'mnist_test0/'
-    start_train(epochs, sim_clr, [train_images, train_labels], [majority_images, majority_labels]
+    start_train(epochs, sim_clr, [train_images, train_labels], [majority_images, majority_labels],
                 [test_images, testset_labels], date, file_path)
